@@ -10,17 +10,29 @@ def macd_update(fast, slow):
     return round((fast - slow), 3)
 
 
-def macdas_update(element, prev_fast, prev_slow, prev_signal, signalas_prev, fast_period, slow_period, signal_period):
-    fast_ma = ema_update(element, fast_period, prev_fast)
-    slow_ma = ema_update(element, slow_period, prev_slow)
+def macdas_update(element, last_condition):
+    fast_ma = ema_update(element, last_condition.fast, last_condition.fastprev)
+    slow_ma = ema_update(element, last_condition.slow, last_condition.slowprev)
     macd_mas = macd_update(fast_ma, slow_ma)
-    signal = ema_update(macd_mas, signal_period, prev_signal)
+    signal = ema_update(macd_mas, last_condition.signal, last_condition.signalprev)
     histogram = macd_update(macd_mas, signal)
-
-    signal_as = ema_update(histogram, signal_period, signalas_prev)
+    signal_as = ema_update(histogram, signal, last_condition.macdas)
     result = {'histogram': histogram, "signal_as": signal_as, "fast": fast_ma,
               "slow": slow_ma, 'signal': signal}
     return result
+#
+#
+# def macdas_update(element, prev_fast, prev_slow, prev_signal, signalas_prev, fast_period, slow_period, signal_period):
+#     fast_ma = ema_update(element, fast_period, prev_fast)
+#     slow_ma = ema_update(element, slow_period, prev_slow)
+#     macd_mas = macd_update(fast_ma, slow_ma)
+#     signal = ema_update(macd_mas, signal_period, prev_signal)
+#     histogram = macd_update(macd_mas, signal)
+#
+#     signal_as = ema_update(histogram, signal_period, signalas_prev)
+#     result = {'histogram': histogram, "signal_as": signal_as, "fast": fast_ma,
+#               "slow": slow_ma, 'signal': signal}
+#     return result
 
 
 def ema(massive, period):

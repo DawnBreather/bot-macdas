@@ -16,7 +16,7 @@ def get_by_bit_kline(start_time, period, length):
         element = client_by_bit.Kline.Kline_get(symbol="BTCUSD", interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
         for item in element[0]['result']:
             massive.append(float(item['close']))
-        start += timedelta(days=1)
+        start += timedelta(hours=24)
 
     return massive
 
@@ -67,9 +67,3 @@ def set_position(long):
         client_by_bit.Positions.Positions_saveLeverage(symbol="BTCUSD", leverage="3").result()
         usd *= 3
     client_by_bit.Order.Order_new(side=side, symbol="BTCUSD", order_type="Market", qty=usd, time_in_force="GoodTillCancel").result()
-
-
-# def close_deal():
-
-# set_position()
-# close_position()

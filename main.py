@@ -1,8 +1,8 @@
 import math
-import mysql.connector
 import currencyConnector
 import ema
 from datetime import datetime, timedelta
+import models
 
 import telebot
 
@@ -14,69 +14,64 @@ def send_new_posts(text):
     bot.send_message(CHANNEL_NAME, text)
 
 
-main_period = 15
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="12345678",
-    database="trade"
-)
-
-mycursor = mydb.cursor()
-
-fast = 3
-slow = 9
-signal = 6
-
-
 def last_candle(localperiod):
-    milliseconds = math.floor(datetime.now().timestamp()) - math.floor(datetime.now().timestamp()) % (localperiod*60)
-    return milliseconds
+    seconds = math.floor(datetime.now().timestamp()) - math.floor(datetime.now().timestamp()) % (localperiod*60)
+    return seconds
 
 
-def get_data():
-    mycursor.execute("SELECT * FROM trade.single")
-    return mycursor.fetchall()
-
-
-def set_data(result, last_timestamp):
-    time = datetime.timestamp(datetime.fromtimestamp(last_timestamp) - timedelta(minutes=main_period))
-    mycursor.execute("DELETE FROM trade.single")
-    mydb.commit()
-    sql = "INSERT INTO single (macdas, signal1, delta, long1, fastprev, slowprev, signalprev, time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-    long = int(result['histogram'] > result['signal_as'])
-    delta = round((result['histogram'] - result['signal_as']), 3)
-    val = (result['histogram'], result['signal_as'], delta, long, result['fast'], result['slow'], result['signal'], time)
-    mycursor.execute(sql, val)
-    mydb.commit()
+# def get_data():
+#     mycursor.execute("SELECT * FROM trade.single")
+#     return mycursor.fetchall()
+#
+#
+# def set_data(result, last_timestamp):
+#     time = datetime.timestamp(datetime.fromtimestamp(last_timestamp) - timedelta(minutes=main_period))
+#     mycursor.execute("DELETE FROM trade.single")
+#     mydb.commit()
+#     sql = "INSERT INTO single (macdas, signal1, delta, long1, fastprev, slowprev, signalprev, time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+#     long = int(result['histogram'] > result['signal_as'])
+#     delta = round((result['histogram'] - result['signal_as']), 3)
+#     val = (result['histogram'], result['signal_as'], delta, long, result['fast'], result['slow'], result['signal'], time)
+#     mycursor.execute(sql, val)
+#     mydb.commit()
 
 
 def update_order(long):
     if currencyConnector.bybit_position()['side'] != "None":
         currencyConnector.close_position()
     currencyConnector.set_position(long)
-    send_new_posts(currencyConnector.bybit_position()['side'])
+    print("сделка")
+    send_new_posts("я работаю {}".format(currencyConnector.bybit_position()['side']))
 
 
-def protocol_update():
-    last = currencyConnector.get_by_bit_last_kline(main_period)
-    prev = get_data()[0]
-    if prev[7] == datetime.timestamp(datetime.fromtimestamp(last_candle(main_period)) - timedelta(minutes=main_period)):
-        return 0
-    new = ema.macdas_update(last, prev[4], prev[5], prev[6], prev[1], fast, slow, signal)
-    set_data(new, last_candle(main_period))
-    long = int(new['histogram'] > new['signal_as'])
-    if long != prev[3]:
+def protocol_update(last_condition):
+    last = currencyConnector.get_by_bit_last_kline(last_condition.main_period)
+    result = ema.macdas_update(last, last_condition)
+    prev_long = last_condition.long1
+    last_condition.update_element(result, last_candle(last_condition.main_period))
+    long = int(last_condition.macdas > last_condition.signal1)
+    if long != prev_long:
         update_order(long)
+    last_condition.set_data_in_mysql()
 
 
-def protocol_new():
-    period = main_period
-    start = (datetime.now() - timedelta(days=3) - timedelta(minutes=period*2))
-    end = last_candle(period)
-    candles = math.trunc((end - start.timestamp())/(period*60))
-    mas = currencyConnector.get_by_bit_kline(start, period, candles)
-    result = ema.macdas(mas, fast, slow, signal)
-    set_data(result, end)
+def protocol_new(last_condition):
+    start = (datetime.now() - timedelta(days=30))
+    end = last_candle(last_condition.main_period)
+    candles = math.trunc((end - start.timestamp())/(60 * last_condition.main_period))
+    mas = currencyConnector.get_by_bit_kline(start, last_condition.main_period, candles)
+    result = ema.macdas(mas, last_condition.fast, last_condition.slow, last_condition.signal)
+    last_condition.update_element(result, last_candle(last_condition.main_period))
+    last_condition.set_data_in_mysql()
     currencyConnector.close_all_position()
-    protocol_update()
+
+
+def root():
+    last_condition = models.state()
+    print(last_condition.delta)
+    if last_condition.time == (last_candle(last_condition.main_period) - (last_condition.main_period * 2 * 60)):
+        protocol_update(last_condition)
+        print("up")
+    else:
+        protocol_new(last_condition)
+        print("new")
