@@ -61,7 +61,6 @@ class state:
         self.slowprev = result['slow']
         self.signalprev = result['signal']
         self.time = datetime.timestamp(datetime.fromtimestamp(last_timestamp) - timedelta(minutes=self.main_period))
-        print(self.time)
 
     def set_data_in_mysql(self):
         self.mycursor.execute("DELETE FROM trade.single")

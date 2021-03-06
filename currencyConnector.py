@@ -12,7 +12,7 @@ def get_by_bit_kline(start_time, period, length):
     num_of_elements = math.floor(24 * 60 / period)
     massive = []
     start = start_time
-    for i in range(math.floor(length / num_of_elements)):
+    for i in range(0, length, num_of_elements):
         element = client_by_bit.Kline.Kline_get(symbol="BTCUSD", interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
         for item in element[0]['result']:
             massive.append(float(item['close']))

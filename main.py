@@ -46,6 +46,7 @@ def update_order(long):
 
 def protocol_update(last_condition):
     last = currencyConnector.get_by_bit_last_kline(last_condition.main_period)
+    print(last)
     result = ema.macdas_update(last, last_condition)
     prev_long = last_condition.long1
     last_condition.update_element(result, last_candle(last_condition.main_period))
@@ -56,11 +57,11 @@ def protocol_update(last_condition):
 
 
 def protocol_new(last_condition):
-    start = (datetime.now() - timedelta(days=30))
+    start = (datetime.now() - timedelta(days=15))
     end = last_candle(last_condition.main_period)
     candles = math.trunc((end - start.timestamp())/(60 * last_condition.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_condition.main_period, candles)
-    result = ema.macdas(mas, last_condition.fast, last_condition.slow, last_condition.signal)
+    result = ema.macdas(mas, last_condition.fast, last_condition.slow, last_condition.signal, start)
     last_condition.update_element(result, last_candle(last_condition.main_period))
     last_condition.set_data_in_mysql()
     currencyConnector.close_all_position()
@@ -68,10 +69,13 @@ def protocol_new(last_condition):
 
 def root():
     last_condition = models.state()
-    print(last_condition.delta)
+    # print(last_condition.delta)
     if last_condition.time == (last_candle(last_condition.main_period) - (last_condition.main_period * 2 * 60)):
         protocol_update(last_condition)
-        print("up")
+        # print("up")
     else:
         protocol_new(last_condition)
-        print("new")
+        # print("new")
+
+
+# protocol_new(models.state())
