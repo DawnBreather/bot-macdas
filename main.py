@@ -1,82 +1,69 @@
 import math
-import mysql.connector
+import os
+
 import currencyConnector
 import ema
 from datetime import datetime, timedelta
-
-# import telebot
-
-# bot = telebot.TeleBot('1644677350:AAFphMLBPP4PLPeQULq7Y_Tndlt5x7ZtzZ4')
-# CHANNEL_NAME = '@macdastothemoon'
+from models.state import State, DbMode
 
 
-# def send_new_posts(text):
-#     bot.send_message(CHANNEL_NAME, text)
+import telebot
+
+_TELEGRAM_BOT = telebot.TeleBot('1644677350:AAFphMLBPP4PLPeQULq7Y_Tndlt5x7ZtzZ4')
+_TELEGRAM_CHANNEL_NAME = '@macdastothemoon'
 
 
-main_period = 15
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="12345678",
-    database="trade"
-)
-
-mycursor = mydb.cursor()
-
-fast = 3
-slow = 9
-signal = 6
+def send_new_posts(text):
+    _TELEGRAM_BOT.send_message(_TELEGRAM_CHANNEL_NAME, text)
 
 
-def last_candle(localperiod):
-    milliseconds = math.floor(datetime.now().timestamp()) - math.floor(datetime.now().timestamp()) % (localperiod*60)
-    return milliseconds
-
-
-def get_data():
-    mycursor.execute("SELECT * FROM trade.single")
-    return mycursor.fetchall()
-
-
-def set_data(result, last_timestamp):
-    time = datetime.timestamp(datetime.fromtimestamp(last_timestamp) - timedelta(minutes=main_period))
-    mycursor.execute("DELETE FROM trade.single")
-    mydb.commit()
-    sql = "INSERT INTO single (macdas, signal1, delta, long1, fastprev, slowprev, signalprev, time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-    long = int(result['histogram'] > result['signal_as'])
-    delta = round((result['histogram'] - result['signal_as']), 3)
-    val = (result['histogram'], result['signal_as'], delta, long, result['fast'], result['slow'], result['signal'], time)
-    mycursor.execute(sql, val)
-    mydb.commit()
+def last_candle(local_period):
+    seconds = math.floor(datetime.now().timestamp()) - math.floor(datetime.now().timestamp()) % (local_period * 60)
+    return seconds
 
 
 def update_order(long):
     if currencyConnector.bybit_position()['side'] != "None":
         currencyConnector.close_position()
     currencyConnector.set_position(long)
-    # send_new_posts(currencyConnector.bybit_position()['side'])
+    print("сделка")
+    send_new_posts("я работаю {}".format(currencyConnector.bybit_position()['side']))
 
 
-def protocol_update():
-    last = currencyConnector.get_by_bit_last_kline(main_period)
-    prev = get_data()[0]
-    if prev[7] == datetime.timestamp(datetime.fromtimestamp(last_candle(main_period)) - timedelta(minutes=main_period)):
-        return 0
-    new = ema.macdas_update(last, prev[4], prev[5], prev[6], prev[1], fast, slow, signal)
-    set_data(new, last_candle(main_period))
-    long = int(new['histogram'] > new['signal_as'])
-    if long != prev[3]:
+def protocol_update(last_state):
+    last = currencyConnector.get_by_bit_last_kline(last_state.main_period)
+    print(last)
+    result = ema.macdas_update(last, last_state)
+    prev_long = last_state.long1
+    last_state.update_element(result, last_candle(last_state.main_period))
+    long = int(last_state.macdas > last_state.signal1)
+    if long != prev_long:
         update_order(long)
+    last_state.set_data()
 
 
-def protocol_new():
-    period = main_period
-    start = (datetime.now() - timedelta(days=3) - timedelta(minutes=period*2))
-    end = last_candle(period)
-    candles = math.trunc((end - start.timestamp())/(period*60))
-    mas = currencyConnector.get_by_bit_kline(start, period, candles)
-    result = ema.macdas(mas, fast, slow, signal)
-    set_data(result, end)
+def protocol_new(last_state):
+    start = (datetime.now() - timedelta(days=15))
+    end = last_candle(last_state.main_period)
+    candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
+    mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
+    result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal, start)
+    last_state.update_element(result, last_candle(last_state.main_period))
+    last_state.set_data()
     currencyConnector.close_all_position()
-    protocol_update()
+
+
+def entrypoint():
+    last_state = State(db_mode=DbMode.DYNAMODB)
+    # print(last_state.delta)
+    if last_state.time == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
+        protocol_update(last_state)
+        # print("up")
+    else:
+        protocol_new(last_state)
+        # print("new")
+
+
+def lambda_handler(event, context):
+    entrypoint()
+
