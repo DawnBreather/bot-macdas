@@ -2,6 +2,7 @@ import json
 from types import SimpleNamespace
 import boto3
 from datetime import datetime, timedelta
+from botocore.exceptions import ClientError
 
 _DYNAMODB_TABLE_NAME = 'macdas'
 
@@ -64,7 +65,8 @@ class state:
         table = dynamodb.Table(_DYNAMODB_TABLE_NAME)
         response = table.put_item(
             Item = {
-                'state': self.toJson
+                'data_type': 'state',
+                'value': self.toJson
             }
         )
 
@@ -75,3 +77,9 @@ class state:
             dynamodb = boto3.resource('dynamodb', endpoint_url = "http://localhost:8000")
 
         table = dynamodb.Table(_DYNAMODB_TABLE_NAME)
+        try:
+            response = table.get_item(Key={'data_type': 'state'})
+        except ClientError as e:
+            print(e.response['Error']['Message'])
+        else:
+            return response['Item']

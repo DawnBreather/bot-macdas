@@ -4,14 +4,14 @@ import currencyConnector
 import ema
 from datetime import datetime, timedelta
 
-import telebot
+# import telebot
 
-bot = telebot.TeleBot('1644677350:AAFphMLBPP4PLPeQULq7Y_Tndlt5x7ZtzZ4')
-CHANNEL_NAME = '@macdastothemoon'
+# bot = telebot.TeleBot('1644677350:AAFphMLBPP4PLPeQULq7Y_Tndlt5x7ZtzZ4')
+# CHANNEL_NAME = '@macdastothemoon'
 
 
-def send_new_posts(text):
-    bot.send_message(CHANNEL_NAME, text)
+# def send_new_posts(text):
+#     bot.send_message(CHANNEL_NAME, text)
 
 
 main_period = 15
@@ -55,7 +55,7 @@ def update_order(long):
     if currencyConnector.bybit_position()['side'] != "None":
         currencyConnector.close_position()
     currencyConnector.set_position(long)
-    send_new_posts(currencyConnector.bybit_position()['side'])
+    # send_new_posts(currencyConnector.bybit_position()['side'])
 
 
 def protocol_update():
