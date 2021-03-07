@@ -7,3 +7,5 @@ phases:
   build:
     commands:
       - pip3 install mysql-connector-python -t .
+      - zip bundle.zip *
+      - aws lambda update-function-code --function-name macdas --zip-file fileb://bundle.zip
