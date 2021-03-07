@@ -1,6 +1,3 @@
-from datetime import datetime, timedelta
-
-
 def n_for_ema(period):
     return 2 / (period + 1)
 

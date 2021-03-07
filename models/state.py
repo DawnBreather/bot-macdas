@@ -10,18 +10,20 @@ import mysql.connector
 
 from models.configuration import Configuration
 
-_DYNAMODB_TABLE_NAME = 'macdas'
+_CONFIG = Configuration()
 
 
 class DbMode(Enum):
     MYSQL = 1
     DYNAMODB = 2
 
+
 class DbDataTypes(Enum):
     STATE = 1
 
+
 class State:
-    main_period = 15
+    main_period = _CONFIG.trd_indicator_main_period
     macdas = None
     signal1 = None
     delta = None
@@ -30,9 +32,9 @@ class State:
     slow_prev = None
     signal_prev = None
     time = None
-    fast = 61
-    slow = 81
-    signal = 368
+    fast = _CONFIG.trd_indicator_fast
+    slow = _CONFIG.trd_indicator_slow
+    signal = _CONFIG.trd_indicator_signal
 
     mysqlConnector = None
     mysqlCursor = None
@@ -77,10 +79,10 @@ class State:
     def __init_mysql_connector(self):
         if not self.mysqlConnector:
             self.mysqlConnector = mysql.connector.connect(
-                host=Configuration.mysql_host,
-                user=Configuration.mysql_user,
-                password=Configuration.mysql_password,
-                database=Configuration.mysql_database,
+                host=_CONFIG.mysql_host,
+                user=_CONFIG.mysql_user,
+                password=_CONFIG.mysql_password,
+                database=_CONFIG.mysql_database,
             )
             self.mysqlCursor = self.mysqlConnector.cursor()
 
@@ -105,7 +107,8 @@ class State:
         self.mysqlConnector.commit()
         sql = "INSERT INTO single (macdas, signal1, delta, long1, fastprev, slowprev, signalprev, time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         val = (
-            self.macdas, self.signal1, self.delta, self.long1, self.fast_prev, self.slow_prev, self.signal_prev, self.time)
+            self.macdas, self.signal1, self.delta, self.long1, self.fast_prev, self.slow_prev, self.signal_prev,
+            self.time)
         self.mysqlCursor.execute(sql, val)
         self.mysqlConnector.commit()
 
@@ -135,7 +138,7 @@ class State:
 
     def __set_data_in_dynamodb(self):
         self.__init_dynamodb_connector()
-        table = self.dynamodb.Table(_DYNAMODB_TABLE_NAME)
+        table = self.dynamodbConnector.Table(_CONFIG.dynamodb_table)
 
         response = table.put_item(
             Item={
@@ -149,8 +152,8 @@ class State:
 
     def __get_data_from_dynamodb(self):
         self.__init_dynamodb_connector()
+        table = self.dynamodbConnector.Table(_CONFIG.dynamodb_table)
 
-        table = self.dynamodb.Table(_DYNAMODB_TABLE_NAME)
         try:
             response = table.get_item(Key={'data_type': DbDataTypes.STATE})
         except ClientError as e:

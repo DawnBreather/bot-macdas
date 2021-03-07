@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from models.configuration import Configuration
 from models.state import State, DbMode
 
 
@@ -28,6 +30,12 @@ def test_getting_data_from_dynamodb():
     print(last_state.to_json())
 
 
-test_saving_data_to_dynamodb()
+def test_configurations_initialization():
+    c = Configuration()
+    c.print()
 
-# testGettingFromDynamodb()
+
+def lambda_handler(event=None, context=None):
+    test_configurations_initialization()
+    # test_saving_data_to_dynamodb()
+    # test_getting_data_from_dynamodb()

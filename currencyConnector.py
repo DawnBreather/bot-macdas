@@ -1,25 +1,21 @@
 import math
-import os
 from datetime import timedelta, datetime
 from bybit import bybit
+from models.configuration import Configuration
 
-from models.ssm_parameter_store import SSMParameterStore
+_CONFIG = Configuration()
 
-_BYBIT_API_KEY = "Eh7cAqnyOf6JarnZl4"
-_BYBIT_SECRET = "AZGFkxVODn6vdmyEqZKNC7UsEszWZAD4UKbO"
-
-_SYMBOL = 'BTCUSD'
-
-
-client_by_bit = bybit(False, api_key=_BYBIT_API_KEY, api_secret=_BYBIT_SECRET)
+_BYBIT_CLIENT = bybit(False, api_key=_CONFIG.bybit_api_key, api_secret=_CONFIG.bybit_api_secret)
 
 
 def get_by_bit_kline(start_time, period, length):
+    symbol = _CONFIG.bybit_symbol
+
     num_of_elements = math.floor(24 * 60 / period)
     massive = []
     start = start_time
     for i in range(0, length, num_of_elements):
-        element = client_by_bit.Kline.Kline_get(symbol=_SYMBOL, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
+        element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
         for item in element[0]['result']:
             massive.append(float(item['close']))
         start += timedelta(hours=24)
@@ -28,21 +24,32 @@ def get_by_bit_kline(start_time, period, length):
 
 
 def get_by_bit_last_kline(period):
+    symbol = _CONFIG.bybit_symbol
+
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
-    element = client_by_bit.Kline.Kline_get(symbol=_SYMBOL, interval=str(period), limit=2, **{'from': last}).result()
+    element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
     return float(element[0]['result'][0]['close'])
 
 
 def deal_qty():
-    qty = client_by_bit.Wallet.Wallet_getBalance(coin="BTC").result()
-    price = client_by_bit.Market.Market_tradingRecords(symbol=_SYMBOL).result()[0]["result"][0]
-    qty = qty[0]['result']['BTC']['available_balance']
+    coin_name = _CONFIG.bybit_balance_coin
+    symbol = _CONFIG.bybit_symbol
+    deal_adjustment = _CONFIG.bybit_deal_qty_adjustment
+
+    qty = _BYBIT_CLIENT.Wallet.Wallet_getBalance(coin=coin_name).result()
+    price = _BYBIT_CLIENT.Market.Market_tradingRecords(symbol=symbol).result()[0]["result"][0]
+    qty = qty[0]['result'][coin_name]['available_balance']
     price = price['price']
     usd = math.floor(qty * price)
-    return usd - 5
+    return usd + deal_adjustment
 
 
 def close_position():
+
+    symbol = _CONFIG.bybit_symbol
+    order_type = _CONFIG.bybit_position_settings_order_type
+    time_in_force = _CONFIG.bybit_position_settings_time_in_force
+
     current_position = bybit_position()
     if current_position['side'] == "Sell":
         position_dir = 'Buy'
@@ -50,11 +57,11 @@ def close_position():
         position_dir = 'Sell'
     else:
         return 0
-    client_by_bit.Order.Order_new(side=position_dir, symbol=_SYMBOL, order_type="Market", qty=current_position['size'], time_in_force="GoodTillCancel").result()
+    _BYBIT_CLIENT.Order.Order_new(side=position_dir, symbol=symbol, order_type=order_type, qty=current_position['size'], time_in_force=time_in_force).result()
 
 
 def bybit_position():
-    position = client_by_bit.Positions.Positions_myPosition().result()[0]['result'][0]['data']
+    position = _BYBIT_CLIENT.Positions.Positions_myPosition().result()[0]['result'][0]['data']
     return {"side": position['side'], "size": position['size']}
 
 
@@ -64,12 +71,19 @@ def close_all_position():
 
 
 def set_position(long):
+    symbol = _CONFIG.bybit_symbol
+    long_leverage = _CONFIG.bybit_position_settings_long_leverage
+    short_leverage = _CONFIG.bybit_position_settings_short_leverage
+    order_type = _CONFIG.bybit_position_settings_order_type
+    time_in_force = _CONFIG.bybit_position_settings_time_in_force
+
     usd = deal_qty()
+
     if long:
         side = "Buy"
-        client_by_bit.Positions.Positions_saveLeverage(symbol=_SYMBOL, leverage="1").result()
+        _BYBIT_CLIENT.Positions.Positions_saveLeverage(symbol=symbol, leverage=long_leverage).result()
     else:
         side = "Sell"
-        client_by_bit.Positions.Positions_saveLeverage(symbol=_SYMBOL, leverage="3").result()
-        usd *= 3
-    client_by_bit.Order.Order_new(side=side, symbol=_SYMBOL, order_type="Market", qty=usd, time_in_force="GoodTillCancel").result()
+        _BYBIT_CLIENT.Positions.Positions_saveLeverage(symbol=symbol, leverage=short_leverage).result()
+        usd *= int(short_leverage)
+    _BYBIT_CLIENT.Order.Order_new(side=side, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force).result()

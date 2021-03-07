@@ -1,20 +1,23 @@
 import math
-import os
 
 import currencyConnector
 import ema
 from datetime import datetime, timedelta
+
+from models.configuration import Configuration
 from models.state import State, DbMode
 
 
 import telebot
 
-_TELEGRAM_BOT = telebot.TeleBot('1644677350:AAFphMLBPP4PLPeQULq7Y_Tndlt5x7ZtzZ4')
-_TELEGRAM_CHANNEL_NAME = '@macdastothemoon'
+_CONFIG = Configuration()
 
 
 def send_new_posts(text):
-    _TELEGRAM_BOT.send_message(_TELEGRAM_CHANNEL_NAME, text)
+    telegram_bot = telebot.TeleBot(_CONFIG.telegram_bot_api_key)
+    telegram_channel = _CONFIG.telegram_bot_channel
+
+    telegram_bot.send_message(telegram_channel, text)
 
 
 def last_candle(local_period):
@@ -43,7 +46,9 @@ def protocol_update(last_state):
 
 
 def protocol_new(last_state):
-    start = (datetime.now() - timedelta(days=15))
+    delta_days = _CONFIG.trd_history_delta_days
+
+    start = (datetime.now() - timedelta(days=delta_days))
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
@@ -64,6 +69,6 @@ def entrypoint():
         # print("new")
 
 
-def lambda_handler(event, context):
+def lambda_handler(event=None, context=None):
     entrypoint()
 
