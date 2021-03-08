@@ -17,12 +17,9 @@ class Configuration:
 
     dynamodb_table = 'macdas'
 
-    #telegram_bot_api_key = '1644677350:AAFphMLBPP4PLPeQULq7Y_Tndlt5x7ZtzZ4'
     telegram_bot_api_key = 'placeholder'
     telegram_bot_channel = '@macdastothemoon'
 
-    # bybit_api_key = 'Eh7cAqnyOf6JarnZl4'
-    # bybit_api_secret = 'AZGFkxVODn6vdmyEqZKNC7UsEszWZAD4UKbO'
     bybit_api_key = 'placeholder'
     bybit_api_secret = 'placeholder'
 
