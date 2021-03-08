@@ -6,7 +6,7 @@ phases:
       python: 3.8
   build:
     commands:
-      - pip3 install mysql-connector-python bybit -t .
+      - pip3 install mysql-connector-python bybit jsonpickle boto3 -t .
       - |
         chmod 644 $(find . -type f)
         chmod 755 $(find . -type d)
