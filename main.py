@@ -30,12 +30,12 @@ def update_order(long):
         currencyConnector.close_position()
     currencyConnector.set_position(long)
     print("сделка")
-    send_new_posts("я работаю {}".format(currencyConnector.bybit_position()['side']))
+    send_new_posts("новая сделка {}".format(currencyConnector.bybit_position()['side']))
 
 
 def protocol_update(last_state):
     last = currencyConnector.get_by_bit_last_kline(last_state.main_period)
-    print(last)
+    # print(last)
     result = ema.macdas_update(last, last_state)
     prev_long = last_state.long1
     last_state.update_element(result, last_candle(last_state.main_period))
@@ -55,7 +55,12 @@ def protocol_new(last_state):
     result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal, start)
     last_state.update_element(result, last_candle(last_state.main_period))
     last_state.set_data()
-    currencyConnector.close_all_position()
+    current_deal = currencyConnector.bybit_position()['side']
+    if current_deal != "None":
+        if (current_deal == "Buy") and not last_state.long1:
+            update_order(last_state.long1)
+        elif (current_deal == "Sell") and last_state.long1:
+            update_order(last_state.long1)
 
 
 def entrypoint():
