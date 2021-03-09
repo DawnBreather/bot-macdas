@@ -114,7 +114,7 @@ class State:
 
     def to_json(self):
         tmp = copy.copy(self)
-        tmp.time = round(tmp.time.timestamp())
+        tmp.time = round(tmp.time)
         tmp.dynamodbConnector = None
         tmp.mysqlConnector = None
         tmp.mysqlCursor = None
@@ -142,7 +142,7 @@ class State:
 
         response = table.put_item(
             Item={
-                'data_type': DbDataTypes.STATE,
+                'data_type': DbDataTypes.STATE.name,
                 'timestamp': round(time.time()),
                 'value': self.to_json()
             }
@@ -155,7 +155,7 @@ class State:
         table = self.dynamodbConnector.Table(_CONFIG.dynamodb_table)
 
         try:
-            response = table.get_item(Key={'data_type': DbDataTypes.STATE})
+            response = table.get_item(Key={'data_type': DbDataTypes.STATE.name})
         except ClientError as e:
             print(e.response['Error']['Message'])
         else:
