@@ -114,11 +114,10 @@ class State:
 
     def to_json(self):
         tmp = copy.copy(self)
-        try:
+        if type(tmp.time).__name__ != "float":
             tmp.time = round(tmp.time.timestamp())
-        finally:
-            tmp.time = tmp.time
-            print(tmp.time)
+            print("Warning! tmp.time class is not float: " + type(tmp.time).__name__)
+
         tmp.dynamodbConnector = None
         tmp.mysqlConnector = None
         tmp.mysqlCursor = None
