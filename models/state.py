@@ -114,7 +114,11 @@ class State:
 
     def to_json(self):
         tmp = copy.copy(self)
-        tmp.time = round(tmp.time.timestamp())
+        try:
+            tmp.time = round(tmp.time.timestamp())
+        finally:
+            tmp.time = tmp.time
+            print(tmp.time)
         tmp.dynamodbConnector = None
         tmp.mysqlConnector = None
         tmp.mysqlCursor = None
