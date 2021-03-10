@@ -67,15 +67,15 @@ def protocol_new(last_state):
 
 def entrypoint():
     last_state = State(db_mode=DbMode.DYNAMODB)
-    # print(last_state.delta)
-    if last_state.time == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
-        protocol_update(last_state)
-        # print("up")
-    else:
-        protocol_new(last_state)
-        # print("new")
+
+    if last_state.time:
+        if last_state.time == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
+            protocol_update(last_state)
+            # print("up")
+
+    protocol_new(last_state)
+    # print("new")
 
 
 def lambda_handler(event=None, context=None):
     entrypoint()
-
