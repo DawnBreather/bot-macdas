@@ -114,7 +114,7 @@ class State:
 
     def to_json(self):
         tmp = copy.copy(self)
-        tmp.time = round(tmp.time)
+        tmp.time = round(tmp.time.timestamp())
         tmp.dynamodbConnector = None
         tmp.mysqlConnector = None
         tmp.mysqlCursor = None
@@ -159,5 +159,8 @@ class State:
         except ClientError as e:
             print(e.response['Error']['Message'])
         else:
-            json_string = response['Item']['value']
-            self.from_json(json_string)
+            try:
+                json_string = response['Item']['value']
+                self.from_json(json_string)
+            finally:
+                return
