@@ -16,8 +16,11 @@ def get_by_bit_kline(start_time, period, length):
     start = start_time
     for i in range(0, length, num_of_elements):
         element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
-        for item in element[0]['result']:
-            massive.append(float(item['close']))
+        try:
+            for item in element[0]['result']:
+                massive.append(float(item['close']))
+        except:
+            return None
         start += timedelta(hours=24)
 
     return massive
@@ -28,7 +31,10 @@ def get_by_bit_last_kline(period):
 
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
     element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
-    return float(element[0]['result'][0]['close'])
+    try:
+        return float(element[0]['result'][0]['close'])
+    except:
+        return None
 
 
 def deal_qty():

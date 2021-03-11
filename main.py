@@ -35,6 +35,9 @@ def update_order(long):
 
 def protocol_update(last_state):
     last = currencyConnector.get_by_bit_last_kline(last_state.main_period)
+    if not last:
+        send_new_posts("API error")
+        return 0
     # print(last)
     result = ema.macdas_update(last, last_state)
     prev_long = last_state.long1
@@ -53,6 +56,9 @@ def protocol_new(last_state):
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
+    if not mas:
+        send_new_posts("API error")
+        return 0
     result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal, start)
     last_state.update_element(result, last_candle(last_state.main_period))
     last_state.set_data()
