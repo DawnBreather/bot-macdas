@@ -40,6 +40,7 @@ def protocol_update(last_state):
     prev_long = last_state.long1
     last_state.update_element(result, last_candle(last_state.main_period))
     long = int(last_state.macdas > last_state.signal1)
+    send_new_posts("update %s %s" % (last_state.delta, last_state.macdas))
     if long != prev_long:
         update_order(long)
     last_state.set_data()
@@ -55,6 +56,7 @@ def protocol_new(last_state):
     result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal, start)
     last_state.update_element(result, last_candle(last_state.main_period))
     last_state.set_data()
+    send_new_posts("new %s %s" % (last_state.delta, last_state.macdas))
     current_deal = currencyConnector.bybit_position()['side']
     if current_deal != "None":
         if (current_deal == "Buy") and not last_state.long1:
