@@ -72,6 +72,7 @@ def entrypoint():
         if last_state.time == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
             protocol_update(last_state)
             # print("up")
+            return 0
 
     protocol_new(last_state)
     # print("new")
