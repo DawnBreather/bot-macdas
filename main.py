@@ -74,6 +74,9 @@ def protocol_new(last_state):
 def entrypoint():
     last_state = State(db_mode=DbMode.DYNAMODB)
     if last_state.time:
+        print(last_candle(last_state.main_period) - (last_state.main_period * 1 * 60))
+        print(last_candle(last_state.main_period) - (last_state.main_period * 2 * 60))
+        print(last_state.time)
         if last_state.time == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
             protocol_update(last_state)
             # print("up")
