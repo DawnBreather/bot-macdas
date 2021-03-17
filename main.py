@@ -49,6 +49,25 @@ def protocol_update(last_state):
     last_state.set_data()
 
 
+def protocol_update_after_wait(last_state):
+    start = last_state.time + timedelta(days=last_state.main_period)
+    end = last_candle(last_state.main_period)
+    candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
+    mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
+    if not mas:
+        send_new_posts("API error")
+        return 0
+    prev_long = last_state.long1
+    for i in mas:
+        result = ema.macdas_update(i, last_state)
+        last_state.update_element(result, last_candle(last_state.main_period))
+    long = int(last_state.macdas > last_state.signal1)
+    send_new_posts("update_after_wait %s %s" % (last_state.delta, last_state.macdas))
+    if long != prev_long:
+        update_order(long)
+    last_state.set_data()
+
+
 def protocol_new(last_state):
     delta_days = _CONFIG.trd_history_delta_days
     start = (datetime.now() - timedelta(days=delta_days))
@@ -73,12 +92,15 @@ def protocol_new(last_state):
 def entrypoint():
     last_state = State(db_mode=DbMode.DYNAMODB)
     if last_state.time:
-        if last_state.time == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
+        print(last_candle(last_state.main_period) - (last_state.main_period * 1 * 60))
+        print(last_candle(last_state.main_period) - (last_state.main_period * 2 * 60))
+        print(last_state.time.timestamp())
+        if last_state.time.timestamp() == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
             protocol_update(last_state)
             # print("up")
             return 0
 
-    protocol_new(last_state)
+    protocol_update_after_wait(last_state)
     # print("new")
 
 

@@ -2,11 +2,16 @@ from datetime import datetime
 
 from models.configuration import Configuration
 from models.state import State, DbMode
+from models.bybit import ByBit
 
+
+def test_initialize_bybit():
+    print("TESTING BYBIT CLIENT INITIALIZATION")
+    bybit_client = ByBit().client
 
 def test_saving_data_to_dynamodb():
     print("TESTING")
-    last_state = State(db_mode=DbMode.DYNAMODB)
+    last_state = State(db_mode=DbMode.DYNAMODB, auto_fetch_last_state=False)
     last_state.main_period = 1
     last_state.signal1 = 2
     last_state.long1 = 3
@@ -33,9 +38,13 @@ def test_getting_data_from_dynamodb():
 def test_configurations_initialization():
     c = Configuration()
     c.print()
+    print('Hi there = )')
 
 
 def lambda_handler(event=None, context=None):
-    test_configurations_initialization()
+    # test_configurations_initialization()
     # test_saving_data_to_dynamodb()
     # test_getting_data_from_dynamodb()
+    test_initialize_bybit()
+
+lambda_handler()

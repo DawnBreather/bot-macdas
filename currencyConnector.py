@@ -1,11 +1,12 @@
 import math
 from datetime import timedelta, datetime
-from bybit import bybit
+
+from models.bybit import ByBit
 from models.configuration import Configuration
 
 _CONFIG = Configuration()
 
-_BYBIT_CLIENT = bybit(False, api_key=_CONFIG.bybit_api_key, api_secret=_CONFIG.bybit_api_secret)
+_BYBIT_CLIENT = ByBit().client
 
 
 def get_by_bit_kline(start_time, period, length):
@@ -15,23 +16,23 @@ def get_by_bit_kline(start_time, period, length):
     massive = []
     start = start_time
     for i in range(0, length, num_of_elements):
-        element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
         try:
+            element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
             for item in element[0]['result']:
                 massive.append(float(item['close']))
         except:
             return None
         start += timedelta(hours=24)
 
-    return massive
+    return massive[0: -1]
 
 
 def get_by_bit_last_kline(period):
     symbol = _CONFIG.bybit_symbol
 
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
-    element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
     try:
+        element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
         return float(element[0]['result'][0]['close'])
     except:
         return None
