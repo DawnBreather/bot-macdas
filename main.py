@@ -54,6 +54,7 @@ def protocol_update_after_wait(last_state):
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
+    send_new_posts("start {0}, end {1}".format(start, datetime.fromtimestamp(end)))
     if not mas:
         send_new_posts("API error")
         return 0

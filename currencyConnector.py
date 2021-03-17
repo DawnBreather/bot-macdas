@@ -3,10 +3,18 @@ from datetime import timedelta, datetime
 
 from models.bybit import ByBit
 from models.configuration import Configuration
+import telebot
 
 _CONFIG = Configuration()
 
 _BYBIT_CLIENT = ByBit().client
+
+
+def send_new_posts(text):
+    telegram_bot = telebot.TeleBot(_CONFIG.telegram_bot_api_key)
+    telegram_channel = _CONFIG.telegram_bot_channel
+
+    telegram_bot.send_message(telegram_channel, text)
 
 
 def get_by_bit_kline(start_time, period, length):
@@ -15,16 +23,18 @@ def get_by_bit_kline(start_time, period, length):
     num_of_elements = math.floor(24 * 60 / period)
     massive = []
     start = start_time
+
     for i in range(0, length, num_of_elements):
         try:
             element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
+            send_new_posts("elements {0}".format(element))
             for item in element[0]['result']:
                 massive.append(float(item['close']))
         except:
             return None
         start += timedelta(hours=24)
-
-    return massive[0: -1]
+    send_new_posts("num_of_elements: {0}, start {1}, ".format(num_of_elements, start, massive))
+    return massive
 
 
 def get_by_bit_last_kline(period):
