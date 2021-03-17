@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-import bybit
+from bybit import bybit
 
 import telebot
 
@@ -31,7 +31,7 @@ class ByBit:
         try:
             by_bit_client = bybit(False, api_key=_CONFIG.bybit_api_key, api_secret=_CONFIG.bybit_api_secret)
         except Exception as e:
-            self.__send_message_to_telegram("Failed to initialize ByBit client: \n" + str(e))
+            self.__send_message_to_telegram("Failed to initialize ByBit client: \n" + str(e) + "\n" + _CONFIG.bybit_api_key + "\n" + _CONFIG.bybit_api_secret)
             time.sleep(interval)
             self.retries += 1
 
