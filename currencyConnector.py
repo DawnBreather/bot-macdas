@@ -2,10 +2,11 @@ import math
 from datetime import timedelta, datetime
 from bybit import bybit
 from models.configuration import Configuration
+from models.bybit import ByBit
 
 _CONFIG = Configuration()
 
-_BYBIT_CLIENT = bybit(False, api_key=_CONFIG.bybit_api_key, api_secret=_CONFIG.bybit_api_secret)
+_BYBIT_CLIENT = ByBit().client
 
 
 def get_by_bit_kline(start_time, period, length):
