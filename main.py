@@ -51,7 +51,6 @@ def protocol_update(last_state):
 
 def protocol_new(last_state):
     delta_days = _CONFIG.trd_history_delta_days
-
     start = (datetime.now() - timedelta(days=delta_days))
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
