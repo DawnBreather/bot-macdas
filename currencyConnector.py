@@ -1,8 +1,8 @@
 import math
 from datetime import timedelta, datetime
-from bybit import bybit
-from models.configuration import Configuration
+
 from models.bybit import ByBit
+from models.configuration import Configuration
 
 _CONFIG = Configuration()
 

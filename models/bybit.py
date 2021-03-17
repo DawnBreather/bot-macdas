@@ -1,12 +1,8 @@
-import copy
-import json
-from enum import Enum
-from types import SimpleNamespace
-import boto3
-from datetime import datetime, timedelta
 import time
-from botocore.exceptions import ClientError
-import mysql.connector
+from enum import Enum
+import bybit
+
+import telebot
 
 from models.configuration import Configuration
 
@@ -34,7 +30,7 @@ class ByBit:
         by_bit_client = None
         try:
             by_bit_client = bybit(False, api_key=_CONFIG.bybit_api_key, api_secret=_CONFIG.bybit_api_secret)
-        except Exceptinon as e:
+        except Exception as e:
             self.__send_message_to_telegram("Failed to initialize ByBit client: \n" + e)
             time.sleep(interval)
             self.retries += 1
