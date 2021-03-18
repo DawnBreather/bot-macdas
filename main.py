@@ -54,7 +54,7 @@ def protocol_update(last_state):
     if not last:
         send_new_posts("API error")
         return 0
-    print(last)
+    # print(last)
     result = ema.macdas_update(last, last_state)
     prev_long = last_state.long1
     last_state.update_element(result, last_candle(last_state.main_period))

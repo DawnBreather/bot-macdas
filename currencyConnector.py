@@ -49,7 +49,6 @@ def get_by_bit_last_kline(period):
 
     try:
         element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
-        send_new_posts(str(element))
         return float(element[0]['result'][0]['close'])
     except:
         return None
