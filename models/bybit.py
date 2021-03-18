@@ -32,7 +32,7 @@ class ByBit:
         if client_type == ByBitType.Setter:
             self.client = self.__try_init_client(_CONFIG.bybit_api_key, _CONFIG.bybit_api_secret)
         else:
-            while (self.client is None) or (self.retries < 20):
+            while (self.client is None) and (self.retries < 20):
                 self.client = self.__try_init_client(_CONFIG.bybit_taker_api_key_mas[self.retries % 2], _CONFIG.bybit_taker_api_key_mas[self.retries % 2])
 
     def __try_init_client(self, api_key, api_secret):
