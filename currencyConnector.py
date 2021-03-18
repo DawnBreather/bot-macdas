@@ -88,7 +88,7 @@ def close_all_position(client):
         close_all_position(client)
 
 
-def set_position(long, client, pointer=20):
+def set_position(long, client, pointer=10):
     symbol = _CONFIG.bybit_symbol
     long_leverage = _CONFIG.bybit_position_settings_long_leverage
     short_leverage = _CONFIG.bybit_position_settings_short_leverage
