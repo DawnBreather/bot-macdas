@@ -7,8 +7,6 @@ import telebot
 
 _CONFIG = Configuration()
 
-_BYBIT_CLIENT = ByBit().client
-
 
 def send_new_posts(text):
     telegram_bot = telebot.TeleBot(_CONFIG.telegram_bot_api_key)
@@ -18,6 +16,7 @@ def send_new_posts(text):
 
 
 def get_by_bit_kline(start_time, period, length):
+    _BYBIT_CLIENT = ByBit().client
     symbol = _CONFIG.bybit_symbol
 
     num_of_elements = math.floor(24 * 60 / period)
@@ -38,6 +37,7 @@ def get_by_bit_kline(start_time, period, length):
 
 
 def get_by_bit_last_kline(period):
+    _BYBIT_CLIENT = ByBit().client
     symbol = _CONFIG.bybit_symbol
 
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
@@ -48,59 +48,59 @@ def get_by_bit_last_kline(period):
         return None
 
 
-def deal_qty():
+def deal_qty(client):
     coin_name = _CONFIG.bybit_balance_coin
     symbol = _CONFIG.bybit_symbol
     deal_adjustment = _CONFIG.bybit_deal_qty_adjustment
 
-    qty = _BYBIT_CLIENT.Wallet.Wallet_getBalance(coin=coin_name).result()
-    price = _BYBIT_CLIENT.Market.Market_tradingRecords(symbol=symbol).result()[0]["result"][0]
+    qty = client.Wallet.Wallet_getBalance(coin=coin_name).result()
+    price = client.Market.Market_tradingRecords(symbol=symbol).result()[0]["result"][0]
     qty = qty[0]['result'][coin_name]['available_balance']
     price = price['price']
     usd = math.floor(qty * price)
-    return usd + deal_adjustment
+    return usd - (usd/100)*deal_adjustment
 
 
-def close_position():
+def close_position(client):
 
     symbol = _CONFIG.bybit_symbol
     order_type = _CONFIG.bybit_position_settings_order_type
     time_in_force = _CONFIG.bybit_position_settings_time_in_force
 
-    current_position = bybit_position()
+    current_position = bybit_position(client)
     if current_position['side'] == "Sell":
         position_dir = 'Buy'
     elif current_position['side'] == "Buy":
         position_dir = 'Sell'
     else:
         return 0
-    _BYBIT_CLIENT.Order.Order_new(side=position_dir, symbol=symbol, order_type=order_type, qty=current_position['size'], time_in_force=time_in_force).result()
+    client.Order.Order_new(side=position_dir, symbol=symbol, order_type=order_type, qty=current_position['size'], time_in_force=time_in_force).result()
 
 
-def bybit_position():
-    position = _BYBIT_CLIENT.Positions.Positions_myPosition().result()[0]['result'][0]['data']
+def bybit_position(client):
+    position = client.Positions.Positions_myPosition().result()[0]['result'][0]['data']
     return {"side": position['side'], "size": position['size']}
 
 
-def close_all_position():
-    if close_position():
-        close_all_position()
+def close_all_position(client):
+    if close_position(client):
+        close_all_position(client)
 
 
-def set_position(long):
+def set_position(long, client):
     symbol = _CONFIG.bybit_symbol
     long_leverage = _CONFIG.bybit_position_settings_long_leverage
     short_leverage = _CONFIG.bybit_position_settings_short_leverage
     order_type = _CONFIG.bybit_position_settings_order_type
     time_in_force = _CONFIG.bybit_position_settings_time_in_force
 
-    usd = deal_qty()
+    usd = deal_qty(client)
 
     if long:
         side = "Buy"
-        _BYBIT_CLIENT.Positions.Positions_saveLeverage(symbol=symbol, leverage=long_leverage).result()
+        client.Positions.Positions_saveLeverage(symbol=symbol, leverage=long_leverage).result()
     else:
         side = "Sell"
-        _BYBIT_CLIENT.Positions.Positions_saveLeverage(symbol=symbol, leverage=short_leverage).result()
+        client.Positions.Positions_saveLeverage(symbol=symbol, leverage=short_leverage).result()
         usd *= int(short_leverage)
-    _BYBIT_CLIENT.Order.Order_new(side=side, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force).result()
+    client.Order.Order_new(side=side, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force).result()

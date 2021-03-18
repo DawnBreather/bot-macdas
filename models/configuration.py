@@ -23,10 +23,15 @@ class Configuration:
     bybit_api_key = 'placeholder'
     bybit_api_secret = 'placeholder'
 
+    bybit_taker_api_key_mas = ["AHZK4xhYa0H5IN2Xnd", "amAI6cXVQyN5qXXQYt"]
+    bybit_taker_api_secret_mas = ["T81V4uw6xjvciKdAa783OvhiFD2NkHFGdQMV", "JA4L7OViXyM7F0HZ90RlQLzJDLfVRQ5xusKF"]
+    # bybit_taker_2_api_key = "amAI6cXVQyN5qXXQYt"
+    # bybit_taker_2_api_secret = "JA4L7OViXyM7F0HZ90RlQLzJDLfVRQ5xusKF"
+
     bybit_symbol = 'BTCUSD'
 
     bybit_balance_coin = 'BTC'
-    bybit_deal_qty_adjustment = -5
+    bybit_deal_qty_adjustment = 2
 
     bybit_position_settings_order_type = 'Market'
     bybit_position_settings_time_in_force = 'GoodTillCancel'

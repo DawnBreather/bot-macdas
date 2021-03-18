@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from models.configuration import Configuration
 from models.state import State, DbMode
 
+from models.bybit import ByBit, ByBitType
+
 
 import telebot
 
@@ -26,11 +28,12 @@ def last_candle(local_period):
 
 
 def update_order(long):
-    if currencyConnector.bybit_position()['side'] != "None":
-        currencyConnector.close_position()
-    currencyConnector.set_position(long)
+    client = ByBit(ByBitType.Setter).client
+    if currencyConnector.bybit_position(client)['side'] != "None":
+        currencyConnector.close_position(client)
+    currencyConnector.set_position(long, client)
     print("сделка")
-    send_new_posts("новая сделка {}".format(currencyConnector.bybit_position()['side']))
+    send_new_posts("новая сделка {}".format(currencyConnector.bybit_position(client)['side']))
 
 
 def protocol_update(last_state):
@@ -82,7 +85,7 @@ def protocol_new(last_state):
     last_state.update_element(result, last_candle(last_state.main_period))
     last_state.set_data()
     send_new_posts("new %s %s" % (last_state.delta, last_state.macdas))
-    current_deal = currencyConnector.bybit_position()['side']
+    current_deal = currencyConnector.bybit_position(ByBit(ByBitType.Setter).client)['side']
     if current_deal != "None":
         if (current_deal == "Buy") and not last_state.long1:
             update_order(last_state.long1)
