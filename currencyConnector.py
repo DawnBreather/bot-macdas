@@ -21,13 +21,17 @@ def get_by_bit_kline(start_time, period, length):
     symbol = _CONFIG.bybit_symbol
 
     num_of_elements = math.floor(24 * 60 / period)
+    if num_of_elements > length:
+        num_of_elements = length
     massive = []
     start = start_time
 
     for i in range(0, length, num_of_elements):
         try:
+            # print(symbol, period, num_of_elements, start, length, i)
             element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
-            send_new_posts("elements {0}".format(element))
+            # print(element[0])
+            # send_new_posts("elements {0}".format(element))
             for item in element[0]['result']:
                 massive.append(float(item['close']))
         except:
@@ -42,8 +46,10 @@ def get_by_bit_last_kline(period):
     symbol = _CONFIG.bybit_symbol
 
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
+
     try:
         element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
+        send_new_posts(str(element))
         return float(element[0]['result'][0]['close'])
     except:
         return None

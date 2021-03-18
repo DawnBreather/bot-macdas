@@ -54,7 +54,7 @@ def protocol_update(last_state):
     if not last:
         send_new_posts("API error")
         return 0
-    # print(last)
+    print(last)
     result = ema.macdas_update(last, last_state)
     prev_long = last_state.long1
     last_state.update_element(result, last_candle(last_state.main_period))
@@ -79,7 +79,7 @@ def protocol_update_after_wait(last_state):
         result = ema.macdas_update(i, last_state)
         last_state.update_element(result, last_candle(last_state.main_period))
     long = int(last_state.macdas > last_state.signal1)
-    send_new_posts("update_after_wait %s %s" % (last_state.delta, last_state.macdas))
+    send_new_posts("update_after_wait %s %s" % (last_state.delta, last_state.macdas, ))
     if long != prev_long:
         update_order(long, last_state)
     last_state.set_data()
@@ -90,11 +90,12 @@ def protocol_new(last_state):
     start = (datetime.now() - timedelta(days=delta_days))
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
+    # print(start, end, candles)
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
     if not mas:
         send_new_posts("API error")
         return 0
-    result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal, start)
+    result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal)
     last_state.update_element(result, last_candle(last_state.main_period))
     last_state.set_data()
     send_new_posts("new %s %s" % (last_state.delta, last_state.macdas))
@@ -123,3 +124,7 @@ def entrypoint():
 
 def lambda_handler(event=None, context=None):
     entrypoint()
+
+
+last_state = State(db_mode=DbMode.DYNAMODB)
+protocol_update(last_state)

@@ -61,7 +61,7 @@ def macd(fast, slow):
     return macd_mas
 
 
-def macdas(mas, fast_period, slow_period, signal_period, start):
+def macdas(mas, fast_period, slow_period, signal_period):
     fast_ma = ema(mas, fast_period)
     slow_ma = ema(mas, slow_period)
     macd_mas = macd(fast_ma, slow_ma)
