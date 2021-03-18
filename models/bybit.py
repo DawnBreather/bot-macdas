@@ -32,7 +32,7 @@ class ByBit:
         if client_type == ByBitType.Setter:
             self.client = self.__try_init_client(_CONFIG.bybit_api_key, _CONFIG.bybit_api_secret)
         else:
-            while self.client is None and self.retries < 2:
+            while self.client is None or self.retries < 2:
                 self.client = self.__try_init_client(_CONFIG.bybit_taker_api_key_mas[self.retries], _CONFIG.bybit_taker_api_key_mas[self.retries])
 
     def __try_init_client(self, api_key, api_secret):
@@ -40,7 +40,8 @@ class ByBit:
         try:
             by_bit_client = bybit(False, api_key=api_key, api_secret=api_secret)
         except Exception as e:
-            self.__send_message_to_telegram("Failed to initialize ByBit client: \n" + str(e))
+            self.__send_message_to_telegram("Failed to initialize ByBit client: \n" + str(e) + "\n api_key" + str(api_key))
+            self.retries += 1
 
         return by_bit_client
 
