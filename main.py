@@ -1,5 +1,5 @@
 import math
-
+import time
 import currencyConnector
 import ema
 from datetime import datetime, timedelta
@@ -27,11 +27,24 @@ def last_candle(local_period):
     return seconds
 
 
-def update_order(long):
-    client = ByBit(ByBitType.Setter).client
+def update_order(long, last_state, pointer=20):
+    client = None
+    try:
+        client = ByBit(ByBitType.Setter).client
+    except Exception as e:
+        send_new_posts("Failed to open position: \n" + str(e))
+        time.sleep(30)
+        if pointer != 0:
+            update_order(long, last_state, pointer - 1)
+        else:
+            last_state.long1 = int(not last_state.long1)
+            return 0
+
     if currencyConnector.bybit_position(client)['side'] != "None":
         currencyConnector.close_position(client)
-    currencyConnector.set_position(long, client)
+    if not currencyConnector.set_position(long, client):
+        last_state.long1 = int(not last_state.long1)
+        send_new_posts("ошибка сделки")
     print("сделка")
     send_new_posts("новая сделка {}".format(currencyConnector.bybit_position(client)['side']))
 
@@ -48,7 +61,7 @@ def protocol_update(last_state):
     long = int(last_state.macdas > last_state.signal1)
     send_new_posts("update %s %s" % (last_state.delta, last_state.macdas))
     if long != prev_long:
-        update_order(long)
+        update_order(long, last_state)
     last_state.set_data()
 
 
@@ -68,7 +81,7 @@ def protocol_update_after_wait(last_state):
     long = int(last_state.macdas > last_state.signal1)
     send_new_posts("update_after_wait %s %s" % (last_state.delta, last_state.macdas))
     if long != prev_long:
-        update_order(long)
+        update_order(long, last_state)
     last_state.set_data()
 
 
@@ -88,9 +101,9 @@ def protocol_new(last_state):
     current_deal = currencyConnector.bybit_position(ByBit(ByBitType.Setter).client)['side']
     if current_deal != "None":
         if (current_deal == "Buy") and not last_state.long1:
-            update_order(last_state.long1)
+            update_order(last_state.long1, last_state)
         elif (current_deal == "Sell") and last_state.long1:
-            update_order(last_state.long1)
+            update_order(last_state.long1, last_state)
 
 
 def entrypoint():

@@ -1,7 +1,8 @@
 import math
 from datetime import timedelta, datetime
+import time
 
-from models.bybit import ByBit
+from models.bybit import ByBit, ByBitType
 from models.configuration import Configuration
 import telebot
 
@@ -87,20 +88,28 @@ def close_all_position(client):
         close_all_position(client)
 
 
-def set_position(long, client):
+def set_position(long, client, pointer=20):
     symbol = _CONFIG.bybit_symbol
     long_leverage = _CONFIG.bybit_position_settings_long_leverage
     short_leverage = _CONFIG.bybit_position_settings_short_leverage
     order_type = _CONFIG.bybit_position_settings_order_type
     time_in_force = _CONFIG.bybit_position_settings_time_in_force
+    try:
+        usd = deal_qty(client)
 
-    usd = deal_qty(client)
-
-    if long:
-        side = "Buy"
-        client.Positions.Positions_saveLeverage(symbol=symbol, leverage=long_leverage).result()
-    else:
-        side = "Sell"
-        client.Positions.Positions_saveLeverage(symbol=symbol, leverage=short_leverage).result()
-        usd *= int(short_leverage)
-    client.Order.Order_new(side=side, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force).result()
+        if long:
+            side = "Buy"
+            client.Positions.Positions_saveLeverage(symbol=symbol, leverage=long_leverage).result()
+        else:
+            side = "Sell"
+            client.Positions.Positions_saveLeverage(symbol=symbol, leverage=short_leverage).result()
+            usd *= int(short_leverage)
+        client.Order.Order_new(side=side, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force).result()
+    except Exception as e:
+        send_new_posts("Failed to open position: \n" + str(e))
+        time.sleep(30)
+        if pointer != 0:
+            set_position(long, ByBit(ByBitType.Setter).client, pointer - 1)
+        else:
+            return False
+    return True
