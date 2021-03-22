@@ -67,7 +67,7 @@ def protocol_update(last_state):
 
 def protocol_update_after_wait(last_state):
     start = last_state.time + timedelta(minutes=last_state.main_period)
-    end = last_candle(last_state.main_period) - last_state.main_period * 60
+    end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
     send_new_posts("start {0}, end {1}".format(start, datetime.fromtimestamp(end)))
