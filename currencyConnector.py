@@ -88,6 +88,11 @@ def bybit_position(client):
     return {"side": position['side'], "size": position['size']}
 
 
+def bybit_position_tg(client):
+    position = client.Positions.Positions_myPosition().result()[0]['result'][0]['data']
+    return position
+
+
 def close_all_position(client):
     if close_position(client):
         close_all_position(client)

@@ -46,7 +46,7 @@ def update_order(long, last_state, pointer=10):
         last_state.long1 = int(not last_state.long1)
         send_new_posts("ошибка сделки")
     print("сделка")
-    send_new_posts("новая сделка {}".format(currencyConnector.bybit_position(client)['side']))
+    send_new_posts("новая сделка {0} детали: {1}".format(currencyConnector.bybit_position(client)['side'], currencyConnector.bybit_position_tg(client)))
 
 
 def protocol_update(last_state):
@@ -59,7 +59,7 @@ def protocol_update(last_state):
     prev_long = last_state.long1
     last_state.update_element(result, last_candle(last_state.main_period))
     long = int(last_state.macdas > last_state.signal1)
-    send_new_posts("update %s %s" % (last_state.delta, last_state.macdas))
+    send_new_posts(f"update new element: {last} %s %s" % (last_state.delta, last_state.macdas))
     if long != prev_long:
         update_order(long, last_state)
     last_state.set_data()
@@ -79,7 +79,7 @@ def protocol_update_after_wait(last_state):
         result = ema.macdas_update(i, last_state)
         last_state.update_element(result, last_candle(last_state.main_period))
     long = int(last_state.macdas > last_state.signal1)
-    send_new_posts("update_after_wait %s %s" % (last_state.delta, last_state.macdas, ))
+    send_new_posts(f"update_after_wait new elements: {mas}%s %s" % (last_state.delta, last_state.macdas, ))
     if long != prev_long:
         update_order(long, last_state)
     last_state.set_data()
