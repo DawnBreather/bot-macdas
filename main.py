@@ -27,7 +27,7 @@ def last_candle(local_period):
     return seconds
 
 
-def update_order(long, last_state, pointer=10):
+def update_order(long, last_state, pointer=2):
     client = None
     try:
         client = ByBit(ByBitType.Setter).client

@@ -29,10 +29,11 @@ class ByBit:
     retries = 0
 
     def __init__(self, client_type=ByBitType.Taker):
+        self.__send_message_to_telegram(f"inicialisation {client_type}")
         if client_type == ByBitType.Setter:
             self.client = self.__try_init_client(_CONFIG.bybit_api_key, _CONFIG.bybit_api_secret)
         else:
-            while (self.client is None) and (self.retries < 10):
+            while (self.client is None) and (self.retries < 2):
                 self.client = self.__try_init_client(_CONFIG.bybit_taker_api_key_mas[self.retries % 2], _CONFIG.bybit_taker_api_key_mas[self.retries % 2])
 
     def __try_init_client(self, api_key, api_secret):

@@ -29,6 +29,7 @@ def get_by_bit_kline(start_time, period, length):
     for i in range(0, length, num_of_elements):
         try:
             # print(symbol, period, num_of_elements, start, length, i)
+            send_new_posts("get_b_b_kline")
             element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
             # print(element[0])
             # send_new_posts("elements {0}".format(element))
@@ -48,6 +49,7 @@ def get_by_bit_last_kline(period):
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
 
     try:
+        send_new_posts("get_b_b_last_kline")
         element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
         return float(element[0]['result'][0]['close'])
     except:
@@ -58,7 +60,7 @@ def deal_qty(client):
     coin_name = _CONFIG.bybit_balance_coin
     symbol = _CONFIG.bybit_symbol
     deal_adjustment = _CONFIG.bybit_deal_qty_adjustment
-
+    send_new_posts("deal_qty")
     qty = client.Wallet.Wallet_getBalance(coin=coin_name).result()
     price = client.Market.Market_tradingRecords(symbol=symbol).result()[0]["result"][0]
     qty = qty[0]['result'][coin_name]['available_balance']
@@ -80,15 +82,18 @@ def close_position(client):
         position_dir = 'Sell'
     else:
         return 0
+    send_new_posts("clos_position")
     client.Order.Order_new(side=position_dir, symbol=symbol, order_type=order_type, qty=current_position['size'], time_in_force=time_in_force).result()
 
 
 def bybit_position(client):
+    send_new_posts("bybit_position")
     position = client.Positions.Positions_myPosition().result()[0]['result'][0]['data']
     return {"side": position['side'], "size": position['size']}
 
 
 def bybit_position_tg(client):
+    send_new_posts("bybit_position_tg")
     position = client.Positions.Positions_myPosition().result()[0]['result'][0]['data']
     return position
 
@@ -98,13 +103,14 @@ def close_all_position(client):
         close_all_position(client)
 
 
-def set_position(long, client, pointer=10):
+def set_position(long, client, pointer=2):
     symbol = _CONFIG.bybit_symbol
     long_leverage = _CONFIG.bybit_position_settings_long_leverage
     short_leverage = _CONFIG.bybit_position_settings_short_leverage
     order_type = _CONFIG.bybit_position_settings_order_type
     time_in_force = _CONFIG.bybit_position_settings_time_in_force
     try:
+        send_new_posts("set_position")
         usd = deal_qty(client)
 
         if long:
