@@ -11,4 +11,5 @@ phases:
         chmod 644 $(find . -type f)
         chmod 755 $(find . -type d)
       - zip -r bundle.zip *
-      - aws lambda update-function-code --function-name macdas --zip-file fileb://bundle.zip
+      - aws lambda update-function-code --function-name macdas --zip-file fileb://bundle.zip --region eu-west-2
+      - aws lambda update-function-code --function-name macdas --zip-file fileb://bundle.zip --region us-east-1
