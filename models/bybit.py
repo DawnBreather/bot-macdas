@@ -3,6 +3,7 @@ import time
 from enum import Enum
 
 import boto3
+from botocore.config import Config
 
 from bybit import bybit
 
@@ -59,7 +60,7 @@ class ByBit:
         next_lambda_region = _CONFIG.next_lambda_region
         next_lambda_name = _CONFIG.next_lambda_name
         if not next_lambda_region:
-            lambda_client = boto3.client('lambda', region=next_lambda_region)
+            lambda_client = boto3.client('lambda', region_name=next_lambda_region)
             lambda_client.invoke(FunctionName=next_lambda_name, InvocationType='RequestResponse')
 
     def __send_message_to_telegram(self, text="placeholder"):

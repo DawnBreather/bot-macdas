@@ -56,7 +56,7 @@ class Configuration:
         self.__get_parameter('region_containing_configurations', ssm_connector=ssm_connector)
 
         if ssm_enabled:
-            ssm_connector = boto3.client('ssm', region=self.region_containing_configurations)
+            ssm_connector = boto3.client('ssm', region_name=self.region_containing_configurations)
 
         self.__init_parameters(ssm_connector)
 
