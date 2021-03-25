@@ -39,7 +39,7 @@ class ByBit:
         else:
             while (self.client is None) and (self.retries < 1):
                 self.client = self.__try_init_client(_CONFIG.bybit_taker_api_key_mas[self.retries % 2],
-                                                     _CONFIG.bybit_taker_api_key_mas[self.retries % 2])
+                                                     _CONFIG.bybit_taker_api_secret_mas[self.retries % 2])
 
     def __try_init_client(self, api_key, api_secret):
         by_bit_client = None
