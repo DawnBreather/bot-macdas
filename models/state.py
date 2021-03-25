@@ -137,7 +137,7 @@ class State:
 
     def __init_dynamodb_connector(self):
         if not self.dynamodbConnector:
-            self.dynamodbConnector = boto3.resource('dynamodb')
+            self.dynamodbConnector = boto3.resource('dynamodb', region=_CONFIG.region_containing_configurations)
 
     def __set_data_in_dynamodb(self):
         self.__init_dynamodb_connector()

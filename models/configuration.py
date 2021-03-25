@@ -15,6 +15,8 @@ class Configuration:
     mysql_password = '12345678'
     mysql_database = 'trade'
 
+    region_containing_configurations = "eu-west-2"
+
     dynamodb_table = 'macdas'
 
     telegram_bot_api_key = 'placeholder'
@@ -51,9 +53,10 @@ class Configuration:
     def __init__(self, ssm_enabled=True):
 
         ssm_connector = None
+        self.__get_parameter('region_containing_configurations', ssm_connector=ssm_connector)
 
         if ssm_enabled:
-            ssm_connector = boto3.client('ssm')
+            ssm_connector = boto3.client('ssm', region=self.region_containing_configurations)
 
         self.__init_parameters(ssm_connector)
 
@@ -63,7 +66,7 @@ class Configuration:
         parameter_names = [a for a in dir(self) if not a.startswith('__') and not callable(getattr(self, a))]
         self.__get_parameter('ssm_prefix', ssm_connector=ssm_connector)
         for pn in parameter_names:
-            if pn != 'ssm_prefix':
+            if pn != 'ssm_prefix' and pn != "region_containing_configurations":
                 self.__get_parameter(pn, ssm_connector=ssm_connector)
 
     def print(self):
