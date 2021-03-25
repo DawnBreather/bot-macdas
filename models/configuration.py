@@ -38,6 +38,9 @@ class Configuration:
     bybit_position_settings_long_leverage = '1'
     bybit_position_settings_short_leverage = '3'
 
+    next_lambda_name = "macdas"
+    next_lambda_region = ""
+
     trd_indicator_main_period = 15
     trd_indicator_fast = 61
     trd_indicator_slow = 81
