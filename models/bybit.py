@@ -45,8 +45,9 @@ class ByBit:
         by_bit_client = None
         try:
             by_bit_client = bybit(False, api_key=api_key, api_secret=api_secret)
+
         except Exception as e:
-            region = os.getenv("AWS_REGION ")
+            region = os.getenv("AWS_REGION")
             self.__send_message_to_telegram("Failed to initialize ByBit client: \n" + str(e) + "\n api_key: " + str(
                 api_key) + "\n retry number: " + str(self.retries) + "\n region: " + region)
             self.__delegate_call_to_next_lambda()
