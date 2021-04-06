@@ -57,6 +57,7 @@ def protocol_update(last_state):
     last_state.update_element(result, last_candle(last_state.main_period))
     long = int(last_state.macdas > last_state.signal1)
     send_new_posts(f"update new element: {last} %s %s" % (last_state.delta, last_state.macdas))
+    update_order(long, last_state)
     if long != prev_long:
         update_order(long, last_state)
     last_state.set_data()

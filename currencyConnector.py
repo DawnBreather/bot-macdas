@@ -118,7 +118,7 @@ def set_position(long, client, pointer=2):
         send_new_posts("set_position")
         usd = deal_qty(client)
         if long:
-            client.LinearPositions.LinearPositions_saveLeverage(symbol=symbol_leverage, buy_leverage=long_leverage, sell_leverage=long_leverage).result()
+            client.LinearPositions.LinearPositions_saveLeverage(symbol=symbol_leverage, buy_leverage=long_leverage, sell_leverage=short_leverage).result()
             side = "Buy"
         else:
             client.LinearPositions.LinearPositions_saveLeverage(symbol=symbol_leverage, buy_leverage=long_leverage, sell_leverage=short_leverage).result()
@@ -129,7 +129,7 @@ def set_position(long, client, pointer=2):
         send_new_posts("Failed to open position: \n" + str(e))
         time.sleep(30)
         if pointer != 0:
-            set_position(long, ByBit(ByBitType.Setter).client, pointer - 1)
+            return set_position(long, ByBit(ByBitType.Setter).client, pointer - 1)
         else:
             return False
     return True

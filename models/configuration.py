@@ -39,8 +39,8 @@ class Configuration:
 
     bybit_position_settings_order_type = 'Market'
     bybit_position_settings_time_in_force = 'GoodTillCancel'
-    bybit_position_settings_long_leverage = '2'
-    bybit_position_settings_short_leverage = '2'
+    bybit_position_settings_long_leverage = 2
+    bybit_position_settings_short_leverage = 2
 
     next_lambda_name = "macdas"
     next_lambda_region = ""
