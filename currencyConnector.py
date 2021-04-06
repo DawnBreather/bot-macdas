@@ -94,14 +94,22 @@ def close_position(client):
 
 def bybit_position(client):
     send_new_posts("bybit_position")
-    position = client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result()[0]['result'][0]
-    return {"side": position['side'], "size": position['size']}
+    position = client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result()[0]['result']
+    for i in position:
+        if str(i["size"]) == "0":
+            continue
+        else:
+            return {"side": i['side'], "size": i['size']}
 
 
 def bybit_position_tg(client):
     send_new_posts("bybit_position_tg")
-    position = client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result()[0]['result'][0]
-    return position
+    position = client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result()[0]['result']
+    for i in position:
+        if str(i["size"]) == "0":
+            continue
+        else:
+            return i
 
 
 def close_all_position(client):
