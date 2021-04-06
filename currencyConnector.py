@@ -70,6 +70,7 @@ def deal_qty(client):
     qty = qty[0]['result'][coin_name]['available_balance']
     price = price['price']
     usd = qty / price
+    send_new_posts(f"deal_qty: {usd - usd % 0.001}")
     return usd - usd % 0.001
 
 
@@ -115,8 +116,8 @@ def set_position(long, client, pointer=2):
     order_type = _CONFIG.bybit_position_settings_order_type
     time_in_force = _CONFIG.bybit_position_settings_time_in_force
     try:
-        send_new_posts("set_position")
         usd = deal_qty(client)
+
         if long:
             client.LinearPositions.LinearPositions_saveLeverage(symbol=symbol_leverage, buy_leverage=long_leverage, sell_leverage=short_leverage).result()
             side = "Buy"
@@ -124,6 +125,7 @@ def set_position(long, client, pointer=2):
             client.LinearPositions.LinearPositions_saveLeverage(symbol=symbol_leverage, buy_leverage=long_leverage, sell_leverage=short_leverage).result()
             side = "Sell"
         usd *= int(short_leverage)
+        send_new_posts(f"set_position\nqty :{usd}\nsymbol: {symbol_leverage}\n side: {side}\n order_type: {order_type}\n time_in_force: {time_in_force}")
         client.LinearOrder.LinearOrder_new(side=side, symbol=symbol_leverage, order_type=order_type, qty=usd, time_in_force=time_in_force, reduce_only=False, close_on_trigger=False).result()
     except Exception as e:
         send_new_posts("Failed to open position: \n" + str(e))

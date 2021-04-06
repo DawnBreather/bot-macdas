@@ -32,7 +32,7 @@ def update_order(long, last_state, pointer=2):
     try:
         client = ByBit(ByBitType.Setter).client
     except Exception as e:
-        send_new_posts("Failed to open position: \n" + str(e))
+        send_new_posts("Failed to init position : \n" + str(e))
         time.sleep(30)
         if pointer != 0:
             update_order(long, last_state, pointer - 1)
@@ -57,7 +57,6 @@ def protocol_update(last_state):
     last_state.update_element(result, last_candle(last_state.main_period))
     long = int(last_state.macdas > last_state.signal1)
     send_new_posts(f"update new element: {last} %s %s" % (last_state.delta, last_state.macdas))
-    update_order(long, last_state)
     if long != prev_long:
         update_order(long, last_state)
     last_state.set_data()
