@@ -19,13 +19,13 @@ def send_new_posts(text):
 def get_by_bit_kline(start_time, period, length):
     _BYBIT_CLIENT = ByBit().client
     symbol = _CONFIG.bybit_symbol_leverage
-
+    if length == 0:
+        exit(0)
     num_of_elements = math.floor(24 * 60 / period)
     if num_of_elements > length:
         num_of_elements = length
     massive = []
     start = start_time
-
     for i in range(0, length, num_of_elements):
         try:
             # print(symbol, period, num_of_elements, start, length, i)
@@ -42,6 +42,8 @@ def get_by_bit_kline(start_time, period, length):
             exit(0)
         start += timedelta(hours=24)
     send_new_posts("num_of_elements: {0}, start {1}, ".format(num_of_elements, start, massive))
+    if not massive:
+        exit(0)
     return massive
 
 
