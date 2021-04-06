@@ -31,14 +31,16 @@ class Configuration:
     # bybit_taker_2_api_secret = "JA4L7OViXyM7F0HZ90RlQLzJDLfVRQ5xusKF"
 
     bybit_symbol = 'BTCUSD'
+    bybit_symbol_leverage = 'BTCUSDT'
 
-    bybit_balance_coin = 'BTC'
+    bybit_balance_coin = 'USD'
+    bybit_balance_coin_usdt = "USDT"
     bybit_deal_qty_adjustment = 2
 
     bybit_position_settings_order_type = 'Market'
     bybit_position_settings_time_in_force = 'GoodTillCancel'
-    bybit_position_settings_long_leverage = '1'
-    bybit_position_settings_short_leverage = '3'
+    bybit_position_settings_long_leverage = '2'
+    bybit_position_settings_short_leverage = '2'
 
     next_lambda_name = "macdas"
     next_lambda_region = ""
