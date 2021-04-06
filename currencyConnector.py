@@ -63,7 +63,7 @@ def get_by_bit_last_kline(period):
 
 def deal_qty(client):
     coin_name = _CONFIG.bybit_balance_coin_usdt
-    symbol = _CONFIG.bybit_symbol_leverage
+    symbol = _CONFIG.bybit_symbol
     send_new_posts("deal_qty")
     qty = client.Wallet.Wallet_getBalance(coin=coin_name).result()
     price = client.Market.Market_tradingRecords(symbol=symbol).result()[0]["result"][0]
