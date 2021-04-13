@@ -42,6 +42,7 @@ def update_order(long, last_state, pointer=2):
 
     if currencyConnector.bybit_position(client)['side'] != "None":
         currencyConnector.close_position(client)
+    send_new_posts(f"я тут {long}")
     if not currencyConnector.set_position(long, client):
         last_state.long1 = int(not last_state.long1)
         send_new_posts("ошибка сделки")
