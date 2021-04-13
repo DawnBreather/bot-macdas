@@ -120,6 +120,7 @@ def close_all_position(client):
 
 
 def set_position(long, client, pointer=2):
+    send_new_posts("set_position")
     symbol_leverage = _CONFIG.bybit_symbol_leverage
     long_leverage = _CONFIG.bybit_position_settings_long_leverage
     short_leverage = _CONFIG.bybit_position_settings_short_leverage
