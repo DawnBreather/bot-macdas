@@ -111,6 +111,7 @@ def protocol_update_after_wait(last_state):
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
+    print(len(mas))
     prev_position = last_state.long1
     for i in mas:
         result = ema.macdas_update(i, last_state)
