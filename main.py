@@ -146,7 +146,8 @@ def protocol_new(last_state):
     last_state.update_element(result, last_candle(last_state.main_period))
 
     result_rsi = ema.RSI_new()
-    last_state.update_rsi(result_rsi)
+    last_time = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_period)
+    last_state.update_rsi(result_rsi, last_time)
 
     send_new_posts("new %s %s %s" % (last_state.delta, last_state.macdas, last_state.rsi))
     current_deal = currencyConnector.bybit_position(setter_client(last_state))['side']
@@ -186,5 +187,5 @@ def lambda_handler(event=None, context=None):
     entrypoint()
 
 
-# last_state = State(db_mode=DbMode.DYNAMODB)
-# protocol_new(last_state)
+last_state = State(db_mode=DbMode.DYNAMODB)
+protocol_new(last_state)
