@@ -133,6 +133,7 @@ def protocol_update_after_wait(last_state):
 
 def protocol_new(last_state):
     delta_days = _CONFIG.trd_history_delta_days
+    send_new_posts("protocol_new_init")
     start = (datetime.now() - timedelta(days=delta_days))
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
@@ -186,4 +187,4 @@ def lambda_handler(event=None, context=None):
 
 
 # last_state = State(db_mode=DbMode.DYNAMODB)
-# protocol_update(last_state)
+# protocol_new(last_state)
