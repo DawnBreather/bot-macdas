@@ -78,3 +78,15 @@ def macdas(mas, fast_period, slow_period, signal_period):
               "slow": slow_ma[-2], 'signal': signal[-2]}
     return result
 
+
+def RMA(mas, period):
+    alpha = 1 / period
+    if period > len(mas):
+        return 0
+    rma_mas = [] + mas[0: period]
+    pointer = period
+    for i in range(len(mas) - period):
+        rma_mas.append(alpha * mas[pointer] + (1 - alpha) * rma_mas[-1])
+        pointer += 1
+    return rma_mas
+
