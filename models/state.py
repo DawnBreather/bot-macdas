@@ -35,8 +35,9 @@ class State:
     last_rsi_candle = None
     last_up_rma = None
     last_dn_rma = None
-    last_rsi_time = None
+    rsi_time = None
     rsi = None
+    in_deal = None
     fast = _CONFIG.trd_indicator_fast
     slow = _CONFIG.trd_indicator_slow
     signal = _CONFIG.trd_indicator_signal
@@ -68,6 +69,13 @@ class State:
         self.slow_prev = result['slow']
         self.signal_prev = result['signal']
         self.time = datetime.timestamp(datetime.fromtimestamp(last_timestamp) - timedelta(minutes=self.main_period))
+
+    def update_rsi(self, result, last_time):
+        self.rsi = result["rsi"]
+        self.last_up_rma = ["last_up_rma"]
+        self.last_dn_rma = ["last_dn_rma"]
+        self.last_rsi_candle = ["last_rsi_candle"]
+        self.rsi_time = last_time + timedelta(hours=4)
 
     def get_data(self):
         if self.db_mode == DbMode.MYSQL:

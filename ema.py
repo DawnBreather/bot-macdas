@@ -108,9 +108,8 @@ def RSI_new():
     start = datetime.now() - timedelta(days=20)
     length = _CONFIG.rsi_period
     rsi_time_frame = _CONFIG.rsi_time_frame
-    # end_time = currencyConnector.get_by_bit_last_kline_time(rsi_time_frame)
     candles = 120
-    mas = currencyConnector.get_by_bit_kline(start, rsi_time_frame, candles)
+    mas = currencyConnector.get_by_bit_kline(start, rsi_time_frame, candles)[0: -1]
     up = []
     dn = []
     pointer = 0
@@ -141,10 +140,8 @@ def RSI_new():
     return {"last_rsi_candle": mas[-1], "last_up_rma": up_rma[-1], "last_dn_rma": dn_rma[-1], "rsi": rsi[-1]}
 
 
-def RSI_update(last_state):
-    rsi_time_frame = _CONFIG.rsi_time_frame
+def RSI_update(last_state, element):
     rsi_period = _CONFIG.rsi_period
-    element = currencyConnector.get_by_bit_last_kline(rsi_time_frame)
     last_rsi_candle = last_state.last_rsi_candle
     last_up_rma = last_state.last_up_rma
     last_dn_rma = last_state.last_dn_rma

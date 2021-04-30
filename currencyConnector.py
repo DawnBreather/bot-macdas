@@ -105,7 +105,7 @@ def close_position(client):
         position_dir = 'Sell'
     else:
         return 0
-    send_new_posts("clos_position")
+    send_new_posts("close_position")
     usd = current_position["size"]
     client.LinearOrder.LinearOrder_new(side=position_dir, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force, reduce_only=True, close_on_trigger=False).result()
 

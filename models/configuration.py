@@ -54,7 +54,7 @@ class Configuration:
 
     rsi_period = 14
     rsi_time_frame = 240
-    last_rsi_candle_utc_time = "placeholder"
+    rsi_middle_level = 50
 
     def __init__(self, ssm_enabled=True):
 

@@ -27,7 +27,7 @@ def last_candle(local_period):
     return seconds
 
 
-def update_order(long, last_state, pointer=2):
+def setter_client(last_state, pointer=2):
     client = None
     try:
         client = ByBit(ByBitType.Setter).client
@@ -35,20 +35,52 @@ def update_order(long, last_state, pointer=2):
         send_new_posts("Failed to init position : \n" + str(e))
         time.sleep(30)
         if pointer != 0:
-            update_order(long, last_state, pointer - 1)
+            setter_client(last_state, pointer - 1)
         else:
             last_state.long1 = int(not last_state.long1)
+            exit(0)
+    return client
+
+
+def deal_processing(last_state, prev_position):
+    if not last_state.in_deal:
+        client = setter_client(last_state)
+        close_deal(client)
+        open_new(last_state, client)
+        last_state.in_deal = True
+    else:
+        if last_state.long1 == prev_position:
             return 0
-    try:
-        if currencyConnector.bybit_position(client)['side'] != "None":
-            currencyConnector.close_position(client)
-        send_new_posts(f"я тут {long}")
-    except Exception as e:
-        send_new_posts(f"я тут {e}")
-    if not currencyConnector.set_position(long, client):
+        else:
+            client = setter_client(last_state)
+            close_deal(client)
+            open_new(last_state, client)
+            last_state.in_deal = True
+
+
+def update_order(last_state, prev_position):
+    if last_state.long1 and (last_state.rsi >= _CONFIG.rsi_middle_level):
+        deal_processing(last_state, prev_position)
+
+    elif (not last_state.long1) and (last_state.rsi < _CONFIG.rsi_middle_level):
+        deal_processing(last_state, prev_position)
+
+    else:
+        client = setter_client(last_state)
+        close_deal(client)
+        last_state.in_deal = False
+
+
+def close_deal(client):
+    if currencyConnector.bybit_position(client)['side'] != "None":
+        currencyConnector.close_position(client)
+    send_new_posts("сделка закрыта")
+
+
+def open_new(last_state, client):
+    if not currencyConnector.set_position(last_state.long1, client):
         last_state.long1 = int(not last_state.long1)
         send_new_posts("ошибка сделки")
-    print("сделка")
     send_new_posts("новая сделка {0} детали: {1}".format(currencyConnector.bybit_position(client)['side'], currencyConnector.bybit_position_tg(client)))
 
 
@@ -56,12 +88,15 @@ def protocol_update(last_state):
     last = currencyConnector.get_by_bit_last_kline(last_state.main_period)
     # print(last)
     result = ema.macdas_update(last, last_state)
-    prev_long = last_state.long1
+    prev_position = last_state.long1
     last_state.update_element(result, last_candle(last_state.main_period))
-    long = int(last_state.macdas > last_state.signal1)
+    # long = int(last_state.macdas > last_state.signal1)
+    if (last_state.rsi_time + timedelta(hours=8)) <= datetime.now():
+        element = currencyConnector.get_by_bit_last_kline(_CONFIG.rsi_time_frame)
+        rsi_result = ema.RSI_update(last_state, element)
+        last_state.update_rsi(rsi_result)
     send_new_posts(f"update new element: {last} %s %s" % (last_state.delta, last_state.macdas))
-    if long != prev_long:
-        update_order(long, last_state)
+    update_order(last_state, prev_position)
     last_state.set_data()
 
 
@@ -71,14 +106,22 @@ def protocol_update_after_wait(last_state):
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
     send_new_posts("start {0}, end {1}".format(start, datetime.fromtimestamp(end)))
-    prev_long = last_state.long1
+    prev_position = last_state.long1
     for i in mas:
         result = ema.macdas_update(i, last_state)
         last_state.update_element(result, last_candle(last_state.main_period))
-    long = int(last_state.macdas > last_state.signal1)
-    send_new_posts(f"update_after_wait new elements: {mas}%s %s" % (last_state.delta, last_state.macdas, ))
-    if long != prev_long:
-        update_order(long, last_state)
+
+    last_4_hour_candle = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_period)
+    delta_seconds = (last_4_hour_candle - last_state.rsi_time).seconds
+    if delta_seconds/60*240 >= 1:
+        candles_for_rsi = math.trunc(delta_seconds/60*240)
+        mas = currencyConnector.get_by_bit_kline(last_state.rsi_time + timedelta(hours=4), _CONFIG.rsi_period, candles_for_rsi)
+        for item in mas:
+            rsi_result = ema.RSI_update(last_state, item)
+            last_state.update_rsi(rsi_result)
+
+    send_new_posts(f"update_after_wait new elements: {mas}%s %s" % (last_state.delta, last_state.macdas))
+    update_order(last_state, prev_position)
     last_state.set_data()
 
 
@@ -87,26 +130,37 @@ def protocol_new(last_state):
     start = (datetime.now() - timedelta(days=delta_days))
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
-    # print(start, end, candles)
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
     if not mas:
         send_new_posts("API error")
         return 0
     result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal)
     last_state.update_element(result, last_candle(last_state.main_period))
-    last_state.set_data()
+
+    result_rsi = ema.RSI_new()
+    last_state.update_rsi(result_rsi)
     send_new_posts("new %s %s" % (last_state.delta, last_state.macdas))
-    current_deal = currencyConnector.bybit_position(ByBit(ByBitType.Setter).client)['side']
+    current_deal = currencyConnector.bybit_position(setter_client(last_state))['side']
+    prev_position = False
     if current_deal != "None":
-        if (current_deal == "Buy") and not last_state.long1:
-            update_order(last_state.long1, last_state)
-        elif (current_deal == "Sell") and last_state.long1:
-            update_order(last_state.long1, last_state)
+        last_state.in_deal = True
+        if current_deal == "Sell":
+            prev_position = False
+        else:
+            prev_position = True
+    else:
+        last_state.in_deal = False
+
+    update_order(last_state, prev_position)
+    last_state.set_data()
 
 
 def entrypoint():
     last_state = State(db_mode=DbMode.DYNAMODB)
-    if last_state.time:
+    if not last_state.rsi:
+        protocol_new(last_state)
+        return 0
+    elif last_state.time:
         print(last_candle(last_state.main_period) - (last_state.main_period * 1 * 60))
         print(last_candle(last_state.main_period) - (last_state.main_period * 2 * 60))
         print(last_state.time.timestamp())
