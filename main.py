@@ -74,14 +74,20 @@ def update_order(last_state, prev_position):
 def close_deal(client):
     if currencyConnector.bybit_position(client)['side'] != "None":
         currencyConnector.close_position(client)
-    send_new_posts("сделка закрыта")
+    # send_new_posts("сделка закрыта")
 
 
 def open_new(last_state, client):
     if not currencyConnector.set_position(last_state.long1, client):
         last_state.long1 = int(not last_state.long1)
         send_new_posts("ошибка сделки")
-    send_new_posts("новая сделка {0} детали: {1}".format(currencyConnector.bybit_position(client)['side'], currencyConnector.bybit_position_tg(client)))
+    side = currencyConnector.bybit_position(client)['side']
+    info = currencyConnector.bybit_position_tg(client)
+    send_new_posts(f"новая сделка:\n"
+                   f"Symbol: {info['symbol']}\n"
+                   f"Side: {side}\n"
+                   f"value: {info['position_value']}\n"
+                   f"entry_price: {info['entry_price']}")
 
 
 def protocol_update(last_state):
@@ -95,7 +101,7 @@ def protocol_update(last_state):
         element = currencyConnector.get_by_bit_last_kline(_CONFIG.rsi_time_frame)
         rsi_result = ema.RSI_update(last_state, element)
         last_state.update_rsi(rsi_result)
-    send_new_posts(f"update new element: {last} %s %s" % (last_state.delta, last_state.macdas))
+    send_new_posts(f"update new element: {last} %s %s, rsi: {last_state.rsi}" % (last_state.delta, last_state.macdas))
     update_order(last_state, prev_position)
     last_state.set_data()
 
@@ -105,7 +111,6 @@ def protocol_update_after_wait(last_state):
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
     mas = currencyConnector.get_by_bit_kline(start, last_state.main_period, candles)
-    send_new_posts("start {0}, end {1}".format(start, datetime.fromtimestamp(end)))
     prev_position = last_state.long1
     for i in mas:
         result = ema.macdas_update(i, last_state)
@@ -120,7 +125,7 @@ def protocol_update_after_wait(last_state):
             rsi_result = ema.RSI_update(last_state, item)
             last_state.update_rsi(rsi_result)
 
-    send_new_posts(f"update_after_wait new elements: {mas}%s %s" % (last_state.delta, last_state.macdas))
+    send_new_posts(f"update_after_wait new elements: {mas}%s %s, rsi: {last_state.rsi}" % (last_state.delta, last_state.macdas))
     update_order(last_state, prev_position)
     last_state.set_data()
 
@@ -134,12 +139,14 @@ def protocol_new(last_state):
     if not mas:
         send_new_posts("API error")
         return 0
+
     result = ema.macdas(mas, last_state.fast, last_state.slow, last_state.signal)
     last_state.update_element(result, last_candle(last_state.main_period))
 
     result_rsi = ema.RSI_new()
     last_state.update_rsi(result_rsi)
-    send_new_posts("new %s %s" % (last_state.delta, last_state.macdas))
+
+    send_new_posts("new %s %s %s" % (last_state.delta, last_state.macdas, last_state.rsi))
     current_deal = currencyConnector.bybit_position(setter_client(last_state))['side']
     prev_position = False
     if current_deal != "None":

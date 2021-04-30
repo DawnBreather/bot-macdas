@@ -29,7 +29,6 @@ def get_by_bit_kline(start_time, period, length):
     for i in range(0, length, num_of_elements):
         try:
             # print(symbol, period, num_of_elements, start, length, i)
-            send_new_posts("get_b_b_kline")
             element = _BYBIT_CLIENT.LinearKline.LinearKline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
             # element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=num_of_elements, **{'from': start.timestamp()}).result()
             # print(element[0])
@@ -41,7 +40,7 @@ def get_by_bit_kline(start_time, period, length):
             send_new_posts("не получил данные, останавливаю выполнение, function name: get_by_bit_kline")
             exit(0)
         start += timedelta(hours=24)
-    send_new_posts("num_of_elements: {0}, start {1}, ".format(num_of_elements, start, massive))
+    # send_new_posts("num_of_elements: {0}, start {1}, ".format(num_of_elements, start, massive))
     if not massive:
         exit(0)
     return massive
@@ -53,7 +52,6 @@ def get_by_bit_last_kline(period):
 
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
     try:
-        send_new_posts("get_b_b_last_kline")
         element = _BYBIT_CLIENT.LinearKline.LinearKline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
         # element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
         return float(element[0]['result'][0]['close'])
@@ -69,7 +67,6 @@ def get_by_bit_last_kline_time(period):
 
     last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
     try:
-        send_new_posts("get_b_b_last_kline")
         element = _BYBIT_CLIENT.LinearKline.LinearKline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
         # element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
         return datetime.fromtimestamp(element[0]['result'][0]['open_time'])
@@ -82,7 +79,6 @@ def get_by_bit_last_kline_time(period):
 def deal_qty(client):
     coin_name = _CONFIG.bybit_balance_coin_usdt
     symbol = _CONFIG.bybit_symbol
-    send_new_posts("deal_qty")
     qty = client.Wallet.Wallet_getBalance(coin=coin_name).result()
     price = client.Market.Market_tradingRecords(symbol=symbol).result()[0]["result"][0]
     qty = qty[0]['result'][coin_name]['available_balance']
@@ -105,13 +101,13 @@ def close_position(client):
         position_dir = 'Sell'
     else:
         return 0
-    send_new_posts("close_position")
     usd = current_position["size"]
-    client.LinearOrder.LinearOrder_new(side=position_dir, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force, reduce_only=True, close_on_trigger=False).result()
+    info = client.LinearOrder.LinearOrder_new(side=position_dir, symbol=symbol, order_type=order_type, qty=usd, time_in_force=time_in_force, reduce_only=True, close_on_trigger=False).result()
+    send_new_posts(f"close position: {info}")
 
 
 def bybit_position(client):
-    send_new_posts("bybit_position")
+    # send_new_posts("bybit_position")
     position = client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result()[0]['result']
     for i in position:
         if str(i["size"]) == "0":
@@ -121,7 +117,7 @@ def bybit_position(client):
 
 
 def bybit_position_tg(client):
-    send_new_posts("bybit_position_tg")
+    # send_new_posts("bybit_position_tg")
     position = client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result()[0]['result']
     for i in position:
         if str(i["size"]) == "0":
@@ -152,7 +148,7 @@ def set_position(long, client, pointer=2):
             client.LinearPositions.LinearPositions_saveLeverage(symbol=symbol_leverage, buy_leverage=long_leverage, sell_leverage=short_leverage).result()
             side = "Sell"
         usd *= int(short_leverage)
-        send_new_posts(f"set_position\nqty :{usd}\nsymbol: {symbol_leverage}\n side: {side}\n order_type: {order_type}\n time_in_force: {time_in_force}")
+        # send_new_posts(f"set_position\nqty :{usd}\nsymbol: {symbol_leverage}\n side: {side}\n order_type: {order_type}\n time_in_force: {time_in_force}")
         client.LinearOrder.LinearOrder_new(side=side, symbol=symbol_leverage, order_type=order_type, qty=usd, time_in_force=time_in_force, reduce_only=False, close_on_trigger=False).result()
     except Exception as e:
         send_new_posts("Failed to open position: \n" + str(e))
