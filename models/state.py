@@ -32,6 +32,11 @@ class State:
     slow_prev = None
     signal_prev = None
     time = None
+    last_rsi_candle = None
+    last_up_rma = None
+    last_dn_rma = None
+    last_rsi_time = None
+    rsi = None
     fast = _CONFIG.trd_indicator_fast
     slow = _CONFIG.trd_indicator_slow
     signal = _CONFIG.trd_indicator_signal

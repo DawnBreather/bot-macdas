@@ -63,6 +63,22 @@ def get_by_bit_last_kline(period):
         exit(0)
 
 
+def get_by_bit_last_kline_time(period):
+    _BYBIT_CLIENT = ByBit().client
+    symbol = _CONFIG.bybit_symbol_leverage
+
+    last = (datetime.now() - timedelta(minutes=period*2)).timestamp()
+    try:
+        send_new_posts("get_b_b_last_kline")
+        element = _BYBIT_CLIENT.LinearKline.LinearKline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
+        # element = _BYBIT_CLIENT.Kline.Kline_get(symbol=symbol, interval=str(period), limit=2, **{'from': last}).result()
+        return datetime.fromtimestamp(element[0]['result'][0]['open_time'])
+    except Exception as e:
+        print('error: ', e)
+        send_new_posts("не получил данные, останавливаю выполнение, function name: get_by_bit_last_kline")
+        exit(0)
+
+
 def deal_qty(client):
     coin_name = _CONFIG.bybit_balance_coin_usdt
     symbol = _CONFIG.bybit_symbol

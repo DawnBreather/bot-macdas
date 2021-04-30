@@ -52,6 +52,10 @@ class Configuration:
 
     trd_history_delta_days = 15
 
+    rsi_period = 14
+    rsi_time_frame = 240
+    last_rsi_candle_utc_time = "placeholder"
+
     def __init__(self, ssm_enabled=True):
 
         ssm_connector = None

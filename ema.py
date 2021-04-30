@@ -1,3 +1,11 @@
+from datetime import datetime, timedelta
+from models.configuration import Configuration
+import currencyConnector
+
+
+_CONFIG = Configuration()
+
+
 def n_for_ema(period):
     return 2 / (period + 1)
 
@@ -90,3 +98,68 @@ def RMA(mas, period):
         pointer += 1
     return rma_mas
 
+
+def RMA_update(last_element, prev_element, period):
+    alpha = 1 / period
+    return alpha * last_element + (1 - alpha) * prev_element
+
+
+def RSI_new():
+    start = datetime.now() - timedelta(days=20)
+    length = _CONFIG.rsi_period
+    rsi_time_frame = _CONFIG.rsi_time_frame
+    # end_time = currencyConnector.get_by_bit_last_kline_time(rsi_time_frame)
+    candles = 120
+    mas = currencyConnector.get_by_bit_kline(start, rsi_time_frame, candles)
+    up = []
+    dn = []
+    pointer = 0
+    for _ in mas:
+        if not pointer:
+            pointer += 1
+            up.append(0)
+            dn.append(0)
+            continue
+        else:
+            up.append(max((mas[pointer] - mas[pointer - 1]), 0))
+            dn.append(-min((mas[pointer] - mas[pointer - 1]), 0))
+
+        pointer += 1
+    up_rma = RMA(up, length)
+    dn_rma = RMA(dn, length)
+    rsi = []
+    pointer = 0
+    for _ in up_rma:
+        if dn_rma[pointer] == 0:
+            rsi.append(100)
+        elif up_rma[pointer] == 0:
+            rsi.append(0)
+        else:
+            rsi.append(100 - (100 / (1 + up_rma[pointer] / dn_rma[pointer])))
+        pointer += 1
+
+    return {"last_rsi_candle": mas[-1], "last_up_rma": up_rma[-1], "last_dn_rma": dn_rma[-1], "rsi": rsi[-1]}
+
+
+def RSI_update(last_state):
+    rsi_time_frame = _CONFIG.rsi_time_frame
+    rsi_period = _CONFIG.rsi_period
+    element = currencyConnector.get_by_bit_last_kline(rsi_time_frame)
+    last_rsi_candle = last_state.last_rsi_candle
+    last_up_rma = last_state.last_up_rma
+    last_dn_rma = last_state.last_dn_rma
+
+    up = max((element - last_rsi_candle), 0)
+    dn = -min((element - last_rsi_candle), 0)
+
+    up_rma = RMA_update(last_element=up, prev_element=last_up_rma, period=rsi_period)
+    dn_rma = RMA_update(last_element=dn, prev_element=last_dn_rma, period=rsi_period)
+
+    if dn_rma == 0:
+        rsi = 100
+    elif up_rma == 0:
+        rsi = 0
+    else:
+        rsi = 100 - (100 / (1 + up_rma / dn_rma))
+
+    return {"last_rsi_candle": element, "last_up_rma": up_rma, "last_dn_rma": dn_rma, "rsi": rsi}
