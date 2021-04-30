@@ -71,7 +71,7 @@ class State:
         self.time = datetime.timestamp(datetime.fromtimestamp(last_timestamp) - timedelta(minutes=self.main_period))
 
     def update_rsi(self, result, last_time):
-        self.rsi = result["rsi"]
+        self.rsi = round(result["rsi"], 2)
         self.last_up_rma = result["last_up_rma"]
         self.last_dn_rma = result["last_dn_rma"]
         self.last_rsi_candle = result["last_rsi_candle"]
