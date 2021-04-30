@@ -98,9 +98,10 @@ def protocol_update(last_state):
     prev_position = last_state.long1
     last_state.update_element(result, last_candle(last_state.main_period))
     # long = int(last_state.macdas > last_state.signal1)
-    send_new_posts(str(datetime.fromtimestamp(last_state.rsi_time)))
     last_4_hour_candle = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_time_frame)
-    if datetime.timestamp(last_4_hour_candle) - last_state.rsi_time >= (240*60):
+    send_new_posts(f"{str(datetime.fromtimestamp(last_state.rsi_time))}, {last_4_hour_candle}")
+
+    if (datetime.timestamp(last_4_hour_candle) - last_state.rsi_time) >= (240*60):
         # if (datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=5)) <= datetime.now():
         element = currencyConnector.get_by_bit_last_kline(_CONFIG.rsi_time_frame)
         rsi_result = ema.RSI_update(last_state, element)
