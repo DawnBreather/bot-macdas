@@ -100,7 +100,7 @@ def protocol_update(last_state):
     # long = int(last_state.macdas > last_state.signal1)
     last_4_hour_candle = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_time_frame)
     element = currencyConnector.get_by_bit_last_kline(_CONFIG.rsi_time_frame)
-    send_new_posts(f"{str(datetime.fromtimestamp(last_state.rsi_time))}, {last_4_hour_candle}, {element}")
+    send_new_posts(f"{str(datetime.fromtimestamp(last_state.rsi_time))}, {last_4_hour_candle}, {element}, {last_state.last_rsi_candle}")
 
     if (datetime.timestamp(last_4_hour_candle) - last_state.rsi_time) >= (240*60):
         # if (datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=5)) <= datetime.now():
@@ -129,7 +129,7 @@ def protocol_update_after_wait(last_state):
     send_new_posts(f"last_4_hour_candle: {last_4_hour_candle},  last_state.rsi_time: {last_state.rsi_time}")
     delta_seconds = (datetime.timestamp(last_4_hour_candle) - last_state.rsi_time)
     element = currencyConnector.get_by_bit_last_kline(_CONFIG.rsi_time_frame)
-    send_new_posts(f"{str(datetime.fromtimestamp(last_state.rsi_time))}, {last_4_hour_candle}, {element}")
+    send_new_posts(f"{str(datetime.fromtimestamp(last_state.rsi_time))}, {last_4_hour_candle}, {element}, {last_state.last_rsi_candle}")
     if delta_seconds >= (60*240):
         candles_for_rsi = math.trunc(delta_seconds/(60*240))
         mas = currencyConnector.get_by_bit_kline(datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=4), _CONFIG.rsi_period, candles_for_rsi)
