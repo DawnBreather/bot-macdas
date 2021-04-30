@@ -118,8 +118,8 @@ def protocol_update_after_wait(last_state):
 
     last_4_hour_candle = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_period)
     delta_seconds = (last_4_hour_candle - last_state.rsi_time).seconds
-    if delta_seconds/60*240 >= 1:
-        candles_for_rsi = math.trunc(delta_seconds/60*240)
+    if delta_seconds/(60*240) >= 1:
+        candles_for_rsi = math.trunc(delta_seconds/(60*240))
         mas = currencyConnector.get_by_bit_kline(last_state.rsi_time + timedelta(hours=4), _CONFIG.rsi_period, candles_for_rsi)
         for item in mas:
             rsi_result = ema.RSI_update(last_state, item)
