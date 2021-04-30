@@ -117,7 +117,7 @@ def protocol_update_after_wait(last_state):
         result = ema.macdas_update(i, last_state)
         last_state.update_element(result, last_candle(last_state.main_period))
 
-    last_4_hour_candle = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_period)
+    last_4_hour_candle = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_time_frame)
     delta_seconds = (datetime.timestamp(last_4_hour_candle) - last_state.rsi_time)
     if delta_seconds/(60*240) >= 1:
         candles_for_rsi = math.trunc(delta_seconds/(60*240))
@@ -146,7 +146,7 @@ def protocol_new(last_state):
     last_state.update_element(result, last_candle(last_state.main_period))
 
     result_rsi = ema.RSI_new()
-    last_time = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_period)
+    last_time = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_time_frame)
     last_state.update_rsi(result_rsi, last_time)
 
     send_new_posts("new %s %s %s" % (last_state.delta, last_state.macdas, last_state.rsi))
