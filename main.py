@@ -187,5 +187,5 @@ def lambda_handler(event=None, context=None):
     entrypoint()
 
 
-last_state = State(db_mode=DbMode.DYNAMODB)
-protocol_new(last_state)
+# last_state = State(db_mode=DbMode.DYNAMODB)
+# protocol_new(last_state)
