@@ -148,6 +148,7 @@ class State:
         self.last_dn_rma = x.last_dn_rma
         self.rsi_time = x.rsi_time
         self.rsi = x.rsi
+        self.in_deal = x.in_deal
         self.fast_prev = x.fast_prev
         self.slow_prev = x.slow_prev
         self.signal_prev = x.signal_prev
