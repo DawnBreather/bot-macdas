@@ -91,6 +91,7 @@ def open_new(last_state, client):
 
 
 def protocol_update(last_state):
+    send_new_posts("protocol_update_init")
     last = currencyConnector.get_by_bit_last_kline(last_state.main_period)
     # print(last)
     result = ema.macdas_update(last, last_state)
@@ -107,6 +108,7 @@ def protocol_update(last_state):
 
 
 def protocol_update_after_wait(last_state):
+    send_new_posts("protocol_update_after_wait_init")
     start = last_state.time + timedelta(minutes=last_state.main_period)
     end = last_candle(last_state.main_period)
     candles = math.trunc((end - start.timestamp()) / (60 * last_state.main_period))
@@ -167,18 +169,21 @@ def protocol_new(last_state):
 
 def entrypoint():
     last_state = State(db_mode=DbMode.DYNAMODB)
+    # print(last_state.rsi)
+    # print(last_state.time)
     if not last_state.rsi:
         protocol_new(last_state)
         return 0
     elif last_state.time:
-        print(last_candle(last_state.main_period) - (last_state.main_period * 1 * 60))
-        print(last_candle(last_state.main_period) - (last_state.main_period * 2 * 60))
-        print(last_state.time.timestamp())
+        # print(last_candle(last_state.main_period) - (last_state.main_period * 1 * 60))
+        # print(last_candle(last_state.main_period) - (last_state.main_period * 2 * 60))
+        # print(last_state.time.timestamp())
         if last_state.time.timestamp() == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
             protocol_update(last_state)
             # print("up")
             return 0
-
+        # elif last_state.time.timestamp() == (last_candle(last_state.main_period) - (last_state.main_period * 1 * 60)):
+        #     return 0
     protocol_update_after_wait(last_state)
     # print("new")
 
@@ -189,3 +194,4 @@ def lambda_handler(event=None, context=None):
 
 # last_state = State(db_mode=DbMode.DYNAMODB)
 # protocol_new(last_state)
+# entrypoint()

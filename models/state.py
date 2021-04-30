@@ -143,6 +143,11 @@ class State:
         self.signal1 = x.signal1
         self.delta = x.delta
         self.long1 = x.long1
+        self.last_rsi_candle = x.last_rsi_candle
+        self.last_up_rma = x.last_up_rma
+        self.last_dn_rma = x.last_dn_rma
+        self.rsi_time = x.rsi_time
+        self.rsi = x.rsi
         self.fast_prev = x.fast_prev
         self.slow_prev = x.slow_prev
         self.signal_prev = x.signal_prev
