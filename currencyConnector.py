@@ -72,7 +72,7 @@ def get_by_bit_last_kline_time(period):
         return datetime.fromtimestamp(element[0]['result'][0]['open_time'])
     except Exception as e:
         print('error: ', e)
-        send_new_posts("не получил данные, останавливаю выполнение, function name: get_by_bit_last_kline")
+        send_new_posts("не получил данные, останавливаю выполнение, function name: get_by_bit_last_kline_time")
         exit(0)
 
 
