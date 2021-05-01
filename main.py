@@ -133,6 +133,7 @@ def protocol_update_after_wait(last_state):
 
     if delta_seconds >= (60*240):
         candles_for_rsi = math.trunc(delta_seconds/(60*240))
+        send_new_posts(str(datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=4)))
         mas = currencyConnector.get_by_bit_kline(datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=4), _CONFIG.rsi_time_frame, candles_for_rsi)
         for item in mas:
             rsi_result = ema.RSI_update(last_state, item)
@@ -182,7 +183,6 @@ def entrypoint():
     # print(last_state.rsi)
     # print(last_state.time)
 
-    # print(last_state.rsi, datetime.fromtimestamp(last_state.rsi_time), last_state.last_rsi_candle)
     if not last_state.rsi:
         protocol_new(last_state)
         return 0
@@ -192,7 +192,6 @@ def entrypoint():
         # print(last_state.time.timestamp())
         if last_state.time.timestamp() == (last_candle(last_state.main_period) - (last_state.main_period * 2 * 60)):
             protocol_update(last_state)
-            # print("up")
             return 0
         # elif last_state.time.timestamp() == (last_candle(last_state.main_period) - (last_state.main_period * 1 * 60)):
         #     return 0
