@@ -2,8 +2,17 @@ from datetime import datetime, timedelta
 from models.configuration import Configuration
 import currencyConnector
 
+import telebot
+
 
 _CONFIG = Configuration()
+
+def send_new_posts(text):
+    telegram_bot = telebot.TeleBot(_CONFIG.telegram_bot_api_key)
+    telegram_channel = _CONFIG.telegram_bot_channel
+
+    telegram_bot.send_message(telegram_channel, text)
+
 
 
 def n_for_ema(period):
@@ -145,6 +154,8 @@ def RSI_update(last_state, element):
     last_rsi_candle = last_state.last_rsi_candle
     last_up_rma = last_state.last_up_rma
     last_dn_rma = last_state.last_dn_rma
+
+    send_new_posts(f"{last_rsi_candle}, {rsi_period}, {last_up_rma}, {last_dn_rma}")
 
     up = max((element - last_rsi_candle), 0)
     dn = -min((element - last_rsi_candle), 0)
