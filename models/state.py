@@ -75,7 +75,11 @@ class State:
         self.last_up_rma = result["last_up_rma"]
         self.last_dn_rma = result["last_dn_rma"]
         self.last_rsi_candle = result["last_rsi_candle"]
-        self.rsi_time = int(datetime.timestamp(last_time - timedelta(hours=int(time.tzname[0]))))
+        try:
+            zone = int(time.tzname[0])
+        except:
+            zone = 0
+        self.rsi_time = int(datetime.timestamp(last_time - timedelta(hours=zone)))
 
     def get_data(self):
         if self.db_mode == DbMode.MYSQL:

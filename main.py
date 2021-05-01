@@ -136,15 +136,10 @@ def protocol_update_after_wait(last_state):
         send_new_posts(str(datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=4)))
         mas = currencyConnector.get_by_bit_kline(datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=4), _CONFIG.rsi_time_frame, candles_for_rsi)
         send_new_posts(str(mas))
-        pointer = 1
         for item in mas:
             rsi_result = ema.RSI_update(last_state, item)
             send_new_posts(f"{rsi_result['last_rsi_candle']}, {rsi_result['last_up_rma']}, {rsi_result['last_dn_rma']}, {rsi_result['rsi']}")
-            try:
-                last_state.update_rsi(rsi_result, datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=4))
-            except Exception as some:
-                send_new_posts(some)
-            pointer += 1
+            last_state.update_rsi(rsi_result, datetime.fromtimestamp(last_state.rsi_time) + timedelta(hours=4))
 
     send_new_posts(f"update_after_wait new elements: {mas}%s %s, rsi: {last_state.rsi}" % (last_state.delta, last_state.macdas))
     update_order(last_state, prev_position)
