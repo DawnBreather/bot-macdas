@@ -66,9 +66,12 @@ def update_order(last_state, prev_position):
         deal_processing(last_state, prev_position)
 
     else:
-        client = setter_client(last_state)
-        close_deal(client)
-        last_state.in_deal = False
+        if last_state.in_deal:
+            client = setter_client(last_state)
+            close_deal(client)
+            last_state.in_deal = False
+        else:
+            return 0
 
 
 def close_deal(client):
