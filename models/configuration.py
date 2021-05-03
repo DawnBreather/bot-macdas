@@ -52,7 +52,7 @@ class Configuration:
 
     trd_history_delta_days = 15
 
-    rsi_period = 2
+    rsi_period = 14
     rsi_time_frame = 240
     rsi_middle_level = 50
 
