@@ -75,8 +75,11 @@ def update_order(last_state, prev_position):
 
 
 def close_deal(client):
-    if currencyConnector.bybit_position(client)['side'] != "None":
-        currencyConnector.close_position(client)
+    try:
+        if currencyConnector.bybit_position(client)['side'] != "None":
+            currencyConnector.close_position(client)
+    except Exception as e:
+        print(e)
     # send_new_posts("сделка закрыта")
 
 
@@ -131,7 +134,7 @@ def protocol_update_after_wait(last_state):
     last_4_hour_candle = currencyConnector.get_by_bit_last_kline_time(_CONFIG.rsi_time_frame)
     # send_new_posts(f"last_4_hour_candle: {last_4_hour_candle},  last_state.rsi_time: {last_state.rsi_time}")
     delta_seconds = (datetime.timestamp(last_4_hour_candle) - last_state.rsi_time)
-    element = currencyConnector.get_by_bit_last_kline(_CONFIG.rsi_time_frame)
+    # element = currencyConnector.get_by_bit_last_kline(_CONFIG.rsi_time_frame)
     # send_new_posts(f"{str(datetime.fromtimestamp(last_state.rsi_time))}, {last_4_hour_candle}, {element}, {last_state.last_rsi_candle}")
 
     if delta_seconds >= (60*240):
