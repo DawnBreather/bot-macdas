@@ -59,10 +59,12 @@ def deal_processing(last_state, prev_position):
 
 
 def update_order(last_state, prev_position):
-    if last_state.long1 and (last_state.rsi >= _CONFIG.rsi_middle_level):
+    if last_state.long1:
+            # (last_state.rsi >= _CONFIG.rsi_middle_level):
         deal_processing(last_state, prev_position)
 
-    elif (not last_state.long1) and (last_state.rsi < _CONFIG.rsi_middle_level):
+    elif not last_state.long1:
+            # and (last_state.rsi < _CONFIG.rsi_middle_level):
         deal_processing(last_state, prev_position)
 
     else:
